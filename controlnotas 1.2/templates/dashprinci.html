@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Panel Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f7f7f5;--su:#fff;--bo:#e8e8e4;--tx:#1a1a18;--mu:#9a9a94;
+  --gr:#27ae60;--gs:#eafaf1;--gb:#a9dfbf;--re:#c0392b;--rs:#fdf0ee;--rb:#f0cdc9;
+  --ye:#d4ac0d;--ys:#fefaec;--yb:#f7dc6f;--go:#c9a84c;--gos:#fdf5e0;--gob:#f0d080;
+  --bl:#2980b9;--bs:#eaf4fb;--bb:#aed6f1;--nh:60px;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;}
+nav{position:fixed;top:0;left:0;right:0;height:var(--nh);background:var(--su);
+  border-bottom:1px solid var(--bo);display:flex;align-items:center;padding:0 20px;z-index:100;gap:6px;}
+.nb{display:flex;align-items:center;gap:8px;font-size:.92rem;font-weight:600;flex:1;}
+.nd{width:8px;height:8px;border-radius:50%;background:var(--tx);}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;
+  font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:500;cursor:pointer;
+  border:1px solid var(--bo);background:var(--su);color:var(--tx);text-decoration:none;transition:background .15s;}
+.btn:hover{background:var(--bg);}
+.btn-b{background:var(--bs);color:var(--bl);border-color:var(--bb);}
+.btn-r{background:var(--rs);color:var(--re);border-color:var(--rb);}
+main{padding-top:calc(var(--nh) + 20px);padding-bottom:60px;max-width:1100px;margin:0 auto;padding-left:20px;padding-right:20px;}
+.card{background:var(--su);border:1px solid var(--bo);border-radius:12px;padding:20px;margin-bottom:16px;
+  opacity:0;transform:translateY(8px);animation:fu .35s ease forwards;}
+@keyframes fu{to{opacity:1;transform:translateY(0);}}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px;flex-wrap:wrap;}
+.ct{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--mu);
+  display:flex;align-items:center;gap:7px;}
+.ct::before{content:'';display:block;width:3px;height:11px;background:var(--tx);border-radius:2px;}
+.mt{width:100%;border-collapse:collapse;font-size:.8rem;}
+.mt th{text-align:left;padding:7px 10px;background:var(--bg);border:1px solid var(--bo);
+  font-size:.67rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mu);font-weight:600;}
+.mt td{padding:7px 10px;border:1px solid var(--bo);}
+.mt tr:nth-child(even) td{background:#fafaf8;}
+.kg{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;}
+.ki{background:var(--bg);border:1px solid var(--bo);border-radius:10px;padding:13px;text-align:center;}
+.kl{font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:var(--mu);margin-bottom:4px;}
+.kv{font-family:'DM Mono',monospace;font-size:1.6rem;font-weight:700;}
+.kv.r{color:var(--re);}.kv.g{color:var(--gr);}.kv.y{color:var(--ye);}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:600px){.cg{grid-template-columns:1fr;}}
+.cb{background:var(--bg);border:1px solid var(--bo);border-radius:10px;padding:13px;}
+.cbt{font-size:.67rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);margin-bottom:10px;}
+.bp{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:20px;
+  font-family:'DM Mono',monospace;font-size:.7rem;font-weight:700;border:1px solid;}
+.bm{background:var(--rs);color:var(--re);border-color:var(--rb);}
+.br2{background:var(--ys);color:var(--ye);border-color:var(--yb);}
+.bg2{background:var(--gs);color:var(--gr);border-color:var(--gb);}
+.bgo{background:var(--gos);color:var(--go);border-color:var(--gob);}
+
+.sr{display:flex;gap:8px;margin-bottom:12px;}
+.si{flex:1;min-width:150px;padding:8px 10px;border:1px solid var(--bo);border-radius:8px;
+  font-family:'DM Sans',sans-serif;font-size:.85rem;background:var(--bg);color:var(--tx);}
+.si:focus{outline:none;border-color:var(--tx);background:#fff;}
+.fs{padding:8px 10px;border:1px solid var(--bo);border-radius:8px;
+  font-family:'DM Sans',sans-serif;font-size:.82rem;background:var(--bg);color:var(--tx);cursor:pointer;}
+.rb3{display:inline-block;padding:2px 7px;border-radius:20px;font-size:.7rem;font-weight:600;}
+.rol-admin{background:#f0e6ff;color:#7c3aed;}
+.rol-profesor{background:var(--bs);color:var(--bl);}
+.rol-estudiante{background:var(--gs);color:var(--gr);}
+.empty{text-align:center;color:var(--mu);padding:24px;font-size:.82rem;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nb"><span class="nd"></span>Panel Admin</div>
+  <a class="btn btn-b" href="/dashprincipal">Tablero</a>
+  <a class="btn btn-b" href="/editar_estudiante">Editar</a>
+  <a class="btn btn-b" href="/top_estudiantes">Top</a>
+  <a class="btn btn-b" href="/carga_masiva">Masiva</a>
+  <a class="btn btn-b" href="/usuarios">Usuarios</a>
+  <a class="btn btn-r" href="/logout">Salir</a>
+</nav>
+
+<main>
+
+{% set total_est = stats.total_estudiantes or 0 %}
+{% set prom_g = stats.promedio_global or 0 %}
+{% set apro = stats.aprobados or 0 %}
+{% set repro = stats.reprobados or 0 %}
+
+  <div class="card">
+    <div class="ct">Resumen global</div>
+    <div class="kg" style="margin-top:10px;">
+      <div class="ki"><div class="kl">Estudiantes</div><div class="kv">{{ total_est }}</div></div>
+      <div class="ki"><div class="kl">Promedio global</div>
+        <div class="kv {% if prom_g >= 4.0 %}g{% elif prom_g >= 3.0 %}y{% else %}r{% endif %}">{{ prom_g or '0' }}</div></div>
+      <div class="ki"><div class="kl">Aprobados</div><div class="kv g">{{ apro }}</div></div>
+      <div class="ki"><div class="kl">Reprobados</div><div class="kv r">{{ repro }}</div></div>
+      <div class="ki"><div class="kl">Carreras</div><div class="kv">{{ stats.total_carreras or 0 }}</div></div>
+      {% for ur in usuarios_rol %}
+      <div class="ki"><div class="kl">{{ ur.rol|capitalize }}s</div><div class="kv">{{ ur.total }}</div></div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ct">Por carrera</div>
+    <div class="cg" style="margin:10px 0 14px;">
+      <div class="cb"><div class="cbt">Promedio por carrera</div><canvas id="chartCarreras" height="220"></canvas></div>
+      <div class="cb"><div class="cbt">Aprobados vs Reprobados</div><canvas id="chartGlobal" height="220"></canvas></div>
+    </div>
+    <table class="mt">
+      <thead><tr><th>Carrera</th><th>Estudiantes</th><th>Promedio</th><th>Reprobados</th></tr></thead>
+      <tbody>
+      {% for c in por_carrera %}
+      <tr>
+        <td><strong>{{ c.carrera }}</strong></td><td>{{ c.total }}</td>
+        <td>{% set p = c.promedio %}
+          {% if p == 5.0 %}<span class="bp bgo">{{ p }}</span>
+          {% elif p >= 4.0 %}<span class="bp bg2">{{ p }}</span>
+          {% elif p >= 3.0 %}<span class="bp br2">{{ p }}</span>
+          {% else %}<span class="bp bm">{{ p }}</span>{% endif %}</td>
+        <td style="color:{% if c.reprobados > 0 %}var(--re){% else %}var(--gr){% endif %};font-weight:600;">{{ c.reprobados }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="ct">Consulta de usuarios</div></div>
+    <div class="sr">
+      <input class="si" type="text" id="sU" placeholder="Buscar usuario..." oninput="filtU()"/>
+      <select class="fs" id="fR" onchange="filtU()">
+        <option value="">Todos los roles</option>
+        <option value="admin">Admin</option>
+        <option value="profesor">Profesor</option>
+        <option value="estudiante">Estudiante</option>
+      </select>
+    </div>
+    <div style="overflow-x:auto;"><table class="mt">
+      <thead><tr><th>ID</th><th>Usuario</th><th>Rol</th><th>Carrera</th><th>ID Est.</th></tr></thead>
+      <tbody id="tbU">
+      {% for u in usuarios %}
+      <tr class="fu" data-n="{{ u.nombre_usuario|lower }}" data-r="{{ u.rol|lower }}">
+        <td style="font-family:'DM Mono',monospace;color:var(--mu)">{{ u.id_usuario }}</td>
+        <td><strong>{{ u.nombre_usuario }}</strong></td>
+        <td><span class="rb3 rol-{{ u.rol|lower }}">{{ u.rol }}</span></td>
+        <td>{{ u.carrera or '&mdash;' }}</td>
+        <td style="font-family:'DM Mono',monospace">{{ u.id_estudiante or '&mdash;' }}</td>
+      </tr>
+      {% else %}<tr><td colspan="5" class="empty">Sin usuarios.</td></tr>{% endfor %}
+      </tbody>
+    </table></div>
+  </div>
+</main>
+
+<script>
+const PC=JSON.parse('{{ por_carrera|tojson|safe }}');
+const APRO={{ stats.aprobados or 0 }};
+const REPO={{ stats.reprobados or 0 }};
+
+new Chart(document.getElementById('chartCarreras'),{type:'bar',data:{
+  labels:PC.map(c=>c.carrera),datasets:[{data:PC.map(c=>c.promedio),borderRadius:4,
+  backgroundColor:PC.map(c=>c.promedio>=4?'#eafaf1':c.promedio>=3?'#fefaec':'#fdf0ee'),
+  borderColor:PC.map(c=>c.promedio>=4?'#27ae60':c.promedio>=3?'#d4ac0d':'#c0392b'),borderWidth:1.5}]},
+  options:{scales:{y:{min:0,max:5},x:{ticks:{font:{family:'DM Sans',size:9}}}},plugins:{legend:{display:false}}}});
+
+new Chart(document.getElementById('chartGlobal'),{type:'doughnut',data:{
+  labels:['Aprobados','Reprobados'],datasets:[{data:[APRO,REPO],
+  backgroundColor:['#eafaf1','#fdf0ee'],borderColor:['#27ae60','#c0392b'],borderWidth:2}]},
+  options:{plugins:{legend:{position:'bottom'}}}});
+
+function filtU(){
+  const t=document.getElementById('sU').value.toLowerCase();
+  const r=document.getElementById('fR').value;
+  document.querySelectorAll('.fu').forEach(f=>{
+    f.style.display=(!t||f.dataset.n.includes(t))&&(!r||f.dataset.r===r)?'':'none';
+  });
+}
+</script>
+</body>
+</html>

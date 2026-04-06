@@ -1,0 +1,645 @@
+<!-- Editar_estudiante -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar / Eliminar Estudiante</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:           #f7f7f5;
+            --surface:      #ffffff;
+            --border:       #e8e8e4;
+            --text:         #1a1a18;
+            --muted:        #9a9a94;
+            --green:        #27ae60;
+            --green-soft:   #eafaf1;
+            --green-border: #a9dfbf;
+            --red:          #c0392b;
+            --red-soft:     #fdf0ee;
+            --red-border:   #f0cdc9;
+            --yellow:       #d4ac0d;
+            --yellow-soft:  #fefaec;
+            --yellow-border:#f7dc6f;
+            --blue:         #2980b9;
+            --blue-soft:    #eaf4fb;
+            --blue-border:  #aed6f1;
+            --gold:         #c9a84c;
+            --gold-soft:    #fdf5e0;
+            --gold-border:  #f0d080;
+            --nav-h:        60px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg); color: var(--text); min-height: 100vh;
+        }
+
+        nav {
+            position: fixed; top: 0; left: 0; right: 0;
+            height: var(--nav-h); background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; padding: 0 28px; z-index: 100;
+        }
+        .nav-brand { display: flex; align-items: center; gap: 10px; font-size: 0.95rem; font-weight: 600; flex: 1; }
+        .nav-brand-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text); }
+
+        .btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 7px 16px; border-radius: 8px;
+            font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 500;
+            cursor: pointer; border: 1px solid var(--border);
+            background: var(--surface); color: var(--text);
+            text-decoration: none; transition: background 0.15s;
+        }
+        .btn:hover { background: var(--bg); }
+        .btn:active { transform: scale(0.97); }
+
+        main {
+            padding-top: calc(var(--nav-h) + 40px);
+            padding-bottom: 60px; max-width: 960px;
+            margin: 0 auto; padding-left: 24px; padding-right: 24px;
+        }
+
+        h1 { font-size: 1.6rem; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 6px; }
+        .subtitle { color: var(--muted); font-size: 0.88rem; margin-bottom: 32px; }
+
+        .card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; padding: 28px; margin-bottom: 20px;
+        }
+        .card-title {
+            font-size: 0.78rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.08em; color: var(--muted); margin-bottom: 16px;
+        }
+
+        /* ── FILTROS ── */
+        .filters-row {
+            display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 2; min-width: 180px; padding: 10px 14px;
+            border: 1px solid var(--border); border-radius: 8px;
+            font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+            background: var(--bg); color: var(--text); transition: border-color 0.15s;
+        }
+        .search-input:focus { outline: none; border-color: var(--text); background: white; }
+
+        .filter-select {
+            flex: 1; min-width: 140px; padding: 10px 12px;
+            border: 1px solid var(--border); border-radius: 8px;
+            font-family: 'DM Sans', sans-serif; font-size: 0.88rem;
+            background: var(--bg); color: var(--text); cursor: pointer;
+            transition: border-color 0.15s;
+        }
+        .filter-select:focus { outline: none; border-color: var(--text); }
+
+        .btn-search {
+            padding: 10px 20px; background: var(--text); color: white;
+            border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif;
+            font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: opacity 0.15s;
+        }
+        .btn-search:hover { opacity: 0.85; }
+
+        /* ── LEYENDA DE COLORES ── */
+        .legend {
+            display: flex; gap: 12px; flex-wrap: wrap;
+            margin-top: 14px; padding-top: 14px;
+            border-top: 1px solid var(--border);
+        }
+        .legend-item {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 0.75rem; color: var(--muted);
+        }
+        .legend-dot {
+            width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+        }
+
+        /* ── CONTADOR DE RESULTADOS ── */
+        .results-count {
+            font-size: 0.78rem; color: var(--muted);
+            margin-top: 12px; font-family: 'DM Mono', monospace;
+        }
+
+        /* ── TABLA ── */
+        .results-table {
+            width: 100%; border-collapse: collapse; font-size: 0.83rem; margin-top: 12px;
+        }
+        .results-table th {
+            text-align: left; padding: 10px 14px; background: var(--bg);
+            border: 1px solid var(--border); font-weight: 600; color: var(--muted);
+            font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;
+        }
+        .results-table td { padding: 10px 14px; border: 1px solid var(--border); }
+        .results-table tr:nth-child(even) td { background: #fafaf8; }
+        .results-table tr.clickable { cursor: pointer; transition: background 0.1s; }
+        .results-table tr.clickable:hover td { background: #f0f0ee !important; }
+        .results-table tr.selected td { background: #e8f4fd !important; }
+
+        /* ── BADGE DE PROMEDIO ── */
+        .badge-promedio {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 3px 10px; border-radius: 20px;
+            font-family: 'DM Mono', monospace; font-size: 0.78rem; font-weight: 600;
+            border: 1px solid;
+        }
+        .badge-malo        { background: var(--red-soft);    color: var(--red);    border-color: var(--red-border); }
+        .badge-regular     { background: var(--yellow-soft); color: var(--yellow); border-color: var(--yellow-border); }
+        .badge-bueno       { background: var(--green-soft);  color: var(--green);  border-color: var(--green-border); }
+        .badge-excepcional { background: var(--gold-soft);   color: var(--gold);   border-color: var(--gold-border); }
+
+        .btn-select {
+            padding: 5px 12px; border-radius: 6px; border: 1px solid var(--blue-border);
+            background: var(--blue-soft); color: var(--blue);
+            font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: background 0.15s;
+        }
+        .btn-select:hover { background: #d0eaf8; }
+
+        .no-results { text-align: center; color: var(--muted); padding: 30px; font-size: 0.88rem; }
+
+        /* ── FORMULARIO EDICIÓN ── */
+        #editSection { display: none; }
+        #editSection.visible { display: block; }
+
+        .estudiante-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+
+        .estudiante-badge {
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: 20px; padding: 5px 14px;
+            font-family: 'DM Mono', monospace; font-size: 0.82rem; color: var(--muted);
+        }
+
+        .form-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px; margin-bottom: 20px;
+        }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label {
+            font-size: 0.78rem; font-weight: 600; color: var(--muted);
+            text-transform: uppercase; letter-spacing: 0.06em;
+        }
+        .form-group input {
+            padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px;
+            font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+            background: var(--bg); color: var(--text); transition: border-color 0.15s;
+        }
+        .form-group input:focus { outline: none; border-color: var(--text); background: white; }
+
+        .form-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        .btn-save {
+            padding: 10px 24px; background: var(--text); color: white;
+            border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: opacity 0.15s;
+        }
+        .btn-save:hover { opacity: 0.85; }
+
+        .btn-delete {
+            padding: 10px 24px; background: var(--red-soft); color: var(--red);
+            border: 1px solid var(--red-border); border-radius: 8px;
+            font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600;
+            cursor: pointer; transition: background 0.15s;
+        }
+        .btn-delete:hover { background: #fbe0dc; }
+
+        .btn-cancel {
+            padding: 10px 20px; background: var(--bg); color: var(--muted);
+            border: 1px solid var(--border); border-radius: 8px;
+            font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+            cursor: pointer; transition: background 0.15s;
+        }
+        .btn-cancel:hover { background: #eeeeec; }
+
+        .msg {
+            padding: 12px 16px; border-radius: 8px; font-size: 0.88rem;
+            font-weight: 500; margin-top: 16px; display: none;
+        }
+        .msg.success { background: var(--green-soft); border: 1px solid var(--green-border); color: #1e8449; display: block; }
+        .msg.error   { background: var(--red-soft);   border: 1px solid var(--red-border);   color: var(--red); display: block; }
+
+        /* ── MODAL ── */
+        .modal-backdrop {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+            z-index: 200; display: none; align-items: center; justify-content: center;
+        }
+        .modal-backdrop.visible { display: flex; }
+        .modal {
+            background: white; border-radius: 12px; padding: 28px;
+            max-width: 400px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+        .modal h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 10px; }
+        .modal p  { color: var(--muted); font-size: 0.88rem; margin-bottom: 24px; line-height: 1.5; }
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-brand">
+        <span class="nav-brand-dot"></span>
+        Editar / Eliminar Estudiante
+    </div>
+    <a class="btn" href="/dashprincipal">← Volver al dashboard</a>
+</nav>
+
+<main>
+    <h1>Gestionar estudiante</h1>
+    <p class="subtitle">Busca, filtra por carrera o desempeño, y selecciona un estudiante para editar o eliminar.</p>
+
+    <!-- BÚSQUEDA Y FILTROS -->
+    <div class="card">
+        <div class="card-title">Buscar y filtrar</div>
+        <div class="filters-row">
+            <input class="search-input" type="text" id="searchInput"
+                   placeholder="Buscar por nombre..."/>
+
+            <!-- Filtro por carrera: se llena dinámicamente con las carreras de la BD -->
+            <select class="filter-select" id="filtroCarrera" onchange="aplicarFiltros()">
+                <option value="">Todas las carreras</option>
+            </select>
+
+            <!-- Filtro por nivel de desempeño -->
+            <select class="filter-select" id="filtroDesempeno" onchange="aplicarFiltros()">
+                <option value="">Todos los promedios</option>
+                <option value="excepcional">⭐ Excepcional (5.0)</option>
+                <option value="bueno">🟢 Bueno (4.0 – 4.9)</option>
+                <option value="regular">🟡 Regular (3.0 – 3.9)</option>
+                <option value="malo">🔴 Malo (menor a 3.0)</option>
+            </select>
+
+            <button class="btn-search" onclick="aplicarFiltros()">Buscar</button>
+            <button class="btn" onclick="limpiarFiltros()">✕ Limpiar</button>
+        </div>
+
+        <!-- Leyenda de colores -->
+        <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#c0392b"></div> Malo &lt; 3.0</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#d4ac0d"></div> Regular 3.0 – 3.9</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#27ae60"></div> Bueno 4.0 – 4.9</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#c9a84c"></div> Excepcional 5.0</div>
+        </div>
+
+        <div class="results-count" id="resultsCount"></div>
+        <div id="searchResults"></div>
+    </div>
+
+    <!-- FORMULARIO EDICIÓN -->
+    <div class="card" id="editSection">
+        <div class="card-title">Editar datos</div>
+
+        <div class="estudiante-header">
+            <strong id="editNombreHeader">—</strong>
+            <span class="estudiante-badge" id="editIdBadge">ID: —</span>
+            <span class="badge-promedio" id="editPromedioBadge"></span>
+        </div>
+
+        <input type="hidden" id="editId">
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Nombre</label>
+                <input type="text" id="editNombre" placeholder="Nombre completo">
+            </div>
+            <div class="form-group">
+                <label>Edad</label>
+                <input type="number" id="editEdad" min="15" max="80" placeholder="15 - 80">
+            </div>
+            <div class="form-group">
+                <label>Carrera</label>
+                <input type="text" id="editCarrera" placeholder="Carrera">
+            </div>
+            <div class="form-group">
+                <label>Nota 1</label>
+                <input type="number" id="editNota1" min="0" max="5" step="0.1" placeholder="0.0 - 5.0">
+            </div>
+            <div class="form-group">
+                <label>Nota 2</label>
+                <input type="number" id="editNota2" min="0" max="5" step="0.1" placeholder="0.0 - 5.0">
+            </div>
+            <div class="form-group">
+                <label>Nota 3</label>
+                <input type="number" id="editNota3" min="0" max="5" step="0.1" placeholder="0.0 - 5.0">
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button class="btn-save"   onclick="guardarCambios()">💾 Guardar cambios</button>
+            <button class="btn-delete" onclick="confirmarEliminar()">🗑 Eliminar</button>
+            <button class="btn-cancel" onclick="cancelarEdicion()">Cancelar</button>
+        </div>
+
+        <div class="msg" id="editMsg"></div>
+    </div>
+</main>
+
+<!-- MODAL CONFIRMAR ELIMINAR -->
+<div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+        <h3>¿Eliminar estudiante?</h3>
+        <p>Esta acción no se puede deshacer. El estudiante <strong id="modalNombre"></strong> será eliminado permanentemente.</p>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+            <button class="btn-delete" onclick="eliminarEstudiante()">Sí, eliminar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ── ESTADO ───────────────────────────────────────────────────────────────
+    // Array con todos los estudiantes cargados desde la BD.
+    // Guardamos aquí el array completo para filtrar en el cliente
+    // sin tener que hacer una nueva llamada al servidor cada vez.
+    let todosLosEstudiantes = [];
+
+    // ID del estudiante actualmente seleccionado en el formulario de edición
+    let idSeleccionado = null;
+
+
+    // ── HELPERS DE PROMEDIO ──────────────────────────────────────────────────
+
+    // Calcula el promedio de las 3 notas y lo redondea a 2 decimales
+    function calcularPromedio(e) {
+        return Math.round(((parseFloat(e.nota1) + parseFloat(e.nota2) + parseFloat(e.nota3)) / 3) * 100) / 100;
+    }
+
+    // Devuelve la categoría de desempeño según el promedio
+    // excepcional = 5.0 exacto | bueno = 4.0-4.9 | regular = 3.0-3.9 | malo = < 3.0
+    function categoriaPromedio(promedio) {
+        if (promedio === 5.0)  return 'excepcional';
+        if (promedio >= 4.0)   return 'bueno';
+        if (promedio >= 3.0)   return 'regular';
+        return 'malo';
+    }
+
+    // Devuelve el HTML del badge de color según la categoría
+    function badgeHTML(promedio) {
+        const cat = categoriaPromedio(promedio);
+        const iconos = { malo:'🔴', regular:'🟡', bueno:'🟢', excepcional:'⭐' };
+        return `<span class="badge-promedio badge-${cat}">${iconos[cat]} ${promedio.toFixed(2)}</span>`;
+    }
+
+
+    // ── CARGA INICIAL ────────────────────────────────────────────────────────
+
+    // Al cargar la página trae todos los estudiantes y llena el filtro de carreras
+    async function cargarTodos() {
+        const res  = await fetch('/api/estudiantes/buscar?nombre=');
+        const data = await res.json();
+
+        // Guardamos en el array global para poder filtrar luego sin ir al servidor
+        todosLosEstudiantes = data.estudiantes || [];
+
+        // Extraemos las carreras únicas y ordenadas para el dropdown de filtro
+        const carreras = [...new Set(todosLosEstudiantes.map(e => e.carrera))].sort();
+        const select   = document.getElementById('filtroCarrera');
+        // Limpiamos y re-llenamos el select (por si se recargan datos)
+        select.innerHTML = '<option value="">Todas las carreras</option>';
+        carreras.forEach(c => {
+            select.innerHTML += `<option value="${c}">${c}</option>`;
+        });
+
+        renderTabla(todosLosEstudiantes);
+    }
+
+
+    // ── FILTRADO EN CLIENTE ──────────────────────────────────────────────────
+
+    // Aplica los 3 filtros: nombre (texto), carrera (select) y desempeño (select)
+    // Opera sobre el array en memoria, sin llamadas al servidor
+    function aplicarFiltros() {
+        const texto     = document.getElementById('searchInput').value.trim().toLowerCase();
+        const carrera   = document.getElementById('filtroCarrera').value;
+        const desempeno = document.getElementById('filtroDesempeno').value;
+
+        const filtrados = todosLosEstudiantes.filter(e => {
+            // Filtro 1: nombre contiene el texto buscado (insensible a mayúsculas)
+            const coincideNombre = !texto || e.nombre.toLowerCase().includes(texto);
+
+            // Filtro 2: carrera coincide exactamente con la seleccionada (o no hay filtro)
+            const coincideCarrera = !carrera || e.carrera === carrera;
+
+            // Filtro 3: categoría de promedio coincide con la seleccionada
+            const promedio = calcularPromedio(e);
+            const coincideDesempeno = !desempeno || categoriaPromedio(promedio) === desempeno;
+
+            // Solo se muestra si pasa los 3 filtros
+            return coincideNombre && coincideCarrera && coincideDesempeno;
+        });
+
+        renderTabla(filtrados);
+    }
+
+    // Limpia todos los filtros y vuelve a mostrar todos
+    function limpiarFiltros() {
+        document.getElementById('searchInput').value    = '';
+        document.getElementById('filtroCarrera').value  = '';
+        document.getElementById('filtroDesempeno').value = '';
+        renderTabla(todosLosEstudiantes);
+    }
+
+    // Búsqueda al presionar Enter en el campo de texto
+    document.getElementById('searchInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') aplicarFiltros();
+    });
+
+
+    // ── RENDER DE TABLA ──────────────────────────────────────────────────────
+
+    function renderTabla(estudiantes) {
+        const container = document.getElementById('searchResults');
+        const counter   = document.getElementById('resultsCount');
+
+        // Actualizamos el contador de resultados visibles
+        counter.textContent = estudiantes.length > 0
+            ? `${estudiantes.length} estudiante${estudiantes.length !== 1 ? 's' : ''} encontrado${estudiantes.length !== 1 ? 's' : ''}`
+            : '';
+
+        if (!estudiantes || estudiantes.length === 0) {
+            container.innerHTML = '<div class="no-results">No se encontraron estudiantes con esos filtros.</div>';
+            return;
+        }
+
+        let html = `
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Edad</th>
+                        <th>Carrera</th>
+                        <th>N1</th>
+                        <th>N2</th>
+                        <th>N3</th>
+                        <th>Promedio</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        estudiantes.forEach(e => {
+            const promedio = calcularPromedio(e);
+
+            // FIX DE SEGURIDAD: en lugar de meter el objeto JSON en el HTML,
+            // solo guardamos el ID numérico en el atributo data-id.
+            // La función seleccionar() busca el objeto completo en el array todosLosEstudiantes.
+            html += `
+                <tr class="clickable" data-id="${e.id_estudiante}" onclick="seleccionarPorId(${e.id_estudiante})">
+                    <td style="font-family:'DM Mono',monospace;color:var(--muted)">${e.id_estudiante}</td>
+                    <td><strong>${e.nombre}</strong></td>
+                    <td>${e.edad}</td>
+                    <td>${e.carrera}</td>
+                    <td>${e.nota1}</td>
+                    <td>${e.nota2}</td>
+                    <td>${e.nota3}</td>
+                    <td>${badgeHTML(promedio)}</td>
+                    <td>
+                        <button class="btn-select"
+                            onclick="event.stopPropagation(); seleccionarPorId(${e.id_estudiante})">
+                            Editar
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+
+    // ── SELECCIONAR ESTUDIANTE ───────────────────────────────────────────────
+
+    // Recibe el ID, busca el objeto completo en el array y rellena el formulario
+    function seleccionarPorId(id) {
+        // Buscamos por ID en el array en memoria (más seguro que pasar el JSON en el HTML)
+        const est = todosLosEstudiantes.find(e => e.id_estudiante === id);
+        if (!est) return;
+
+        idSeleccionado = id;
+
+        // Rellenamos los campos del formulario con los datos actuales del estudiante
+        document.getElementById('editId').value     = est.id_estudiante;
+        document.getElementById('editNombre').value = est.nombre;
+        document.getElementById('editEdad').value   = est.edad;
+        document.getElementById('editCarrera').value= est.carrera;
+        document.getElementById('editNota1').value  = est.nota1;
+        document.getElementById('editNota2').value  = est.nota2;
+        document.getElementById('editNota3').value  = est.nota3;
+
+        // Actualizamos el encabezado del formulario
+        document.getElementById('editNombreHeader').textContent = est.nombre;
+        document.getElementById('editIdBadge').textContent      = `ID: ${est.id_estudiante}`;
+
+        // Mostramos el badge de promedio en el encabezado del formulario
+        const promedio = calcularPromedio(est);
+        document.getElementById('editPromedioBadge').outerHTML =
+            badgeHTML(promedio).replace('class="badge-promedio', 'id="editPromedioBadge" class="badge-promedio');
+
+        // Mostramos el formulario y limpiamos mensajes anteriores
+        document.getElementById('editSection').classList.add('visible');
+        document.getElementById('editMsg').className   = 'msg';
+        document.getElementById('editMsg').textContent = '';
+
+        // Hacemos scroll suave al formulario
+        document.getElementById('editSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function cancelarEdicion() {
+        idSeleccionado = null;
+        document.getElementById('editSection').classList.remove('visible');
+    }
+
+
+    // ── GUARDAR CAMBIOS ──────────────────────────────────────────────────────
+
+    async function guardarCambios() {
+        const id      = document.getElementById('editId').value;
+        const nombre  = document.getElementById('editNombre').value.trim();
+        const edad    = document.getElementById('editEdad').value;
+        const carrera = document.getElementById('editCarrera').value.trim();
+        const nota1   = document.getElementById('editNota1').value;
+        const nota2   = document.getElementById('editNota2').value;
+        const nota3   = document.getElementById('editNota3').value;
+
+        if (!nombre || !edad || !carrera || nota1 === '' || nota2 === '' || nota3 === '') {
+            mostrarMsg('⚠️ Por favor completa todos los campos.', 'error');
+            return;
+        }
+
+        const res  = await fetch('/api/estudiantes/editar', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id_estudiante: id,
+                nombre, carrera,
+                edad:  parseInt(edad),
+                nota1: parseFloat(nota1),
+                nota2: parseFloat(nota2),
+                nota3: parseFloat(nota3)
+            })
+        });
+        const data = await res.json();
+
+        if (data.ok) {
+            mostrarMsg('✅ Estudiante actualizado correctamente.', 'success');
+            // Recargamos la lista para reflejar los cambios
+            await cargarTodos();
+            // Cerramos el formulario después de 1.5s
+            setTimeout(() => cancelarEdicion(), 1500);
+        } else {
+            mostrarMsg('❌ ' + data.error, 'error');
+        }
+    }
+
+
+    // ── ELIMINAR ─────────────────────────────────────────────────────────────
+
+    function confirmarEliminar() {
+        // Buscamos el nombre actual en el array para mostrarlo en el modal
+        const est = todosLosEstudiantes.find(e => e.id_estudiante === idSeleccionado);
+        document.getElementById('modalNombre').textContent = est?.nombre || '';
+        document.getElementById('modalBackdrop').classList.add('visible');
+    }
+
+    function cerrarModal() {
+        document.getElementById('modalBackdrop').classList.remove('visible');
+    }
+
+    async function eliminarEstudiante() {
+        cerrarModal();
+        const id = document.getElementById('editId').value;
+
+        const res  = await fetch('/api/estudiantes/eliminar', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id_estudiante: id })
+        });
+        const data = await res.json();
+
+        if (data.ok) {
+            mostrarMsg('✅ Estudiante eliminado correctamente.', 'success');
+            cancelarEdicion();
+            // Recargamos para que desaparezca de la tabla
+            await cargarTodos();
+        } else {
+            mostrarMsg('❌ ' + data.error, 'error');
+        }
+    }
+
+    function mostrarMsg(texto, tipo) {
+        const el = document.getElementById('editMsg');
+        el.textContent = texto;
+        el.className   = `msg ${tipo}`;
+    }
+
+
+    // ── INICIO ───────────────────────────────────────────────────────────────
+    cargarTodos();
+</script>
+</body>
+</html>

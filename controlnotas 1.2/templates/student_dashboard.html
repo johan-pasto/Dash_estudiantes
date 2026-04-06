@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Mi Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:      #f7f7f5;
+  --surface: #ffffff;
+  --border:  #e8e8e4;
+  --text:    #1a1a18;
+  --muted:   #9a9a94;
+  --green:   #27ae60;  --green-soft: #eafaf1;  --green-border: #a9dfbf;
+  --red:     #c0392b;  --red-soft:   #fdf0ee;  --red-border:   #f0cdc9;
+  --yellow:  #d4ac0d;  --yellow-soft:#fefaec;  --yellow-border:#f7dc6f;
+  --gold:    #c9a84c;  --gold-soft:  #fdf5e0;  --gold-border:  #f0d080;
+  --blue:    #2980b9;  --blue-soft:  #eaf4fb;  --blue-border:  #aed6f1;
+  --nav-h:   60px;
+}
+*, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+/* ── NAV ── */
+nav {
+  position:fixed; top:0; left:0; right:0; height:var(--nav-h);
+  background:var(--surface); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; padding:0 28px; z-index:100; gap:10px;
+}
+.nav-brand { display:flex; align-items:center; gap:8px; font-size:.95rem; font-weight:600; flex:1; }
+.nav-dot   { width:8px; height:8px; border-radius:50%; background:var(--text); }
+.nav-badge {
+  background:var(--bg); border:1px solid var(--border); border-radius:20px;
+  padding:4px 12px; font-family:'DM Mono',monospace; font-size:.78rem; color:var(--muted);
+}
+.btn {
+  display:inline-flex; align-items:center; gap:6px; padding:7px 16px;
+  border-radius:8px; font-family:'DM Sans',sans-serif; font-size:.82rem;
+  font-weight:500; cursor:pointer; border:1px solid var(--border);
+  background:var(--surface); color:var(--text); text-decoration:none; transition:background .15s;
+}
+.btn:hover { background:var(--bg); }
+
+/* ── LAYOUT ── */
+main {
+  padding-top: calc(var(--nav-h) + 36px);
+  padding-bottom: 60px;
+  max-width: 900px;
+  margin: 0 auto;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.page-title   { font-size:1.5rem; font-weight:600; letter-spacing:-.02em; margin-bottom:4px; }
+.page-sub     { color:var(--muted); font-size:.88rem; margin-bottom:32px; }
+
+/* ── CARDS ── */
+.card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:12px; padding:24px; margin-bottom:20px;
+}
+.card-title {
+  font-size:.75rem; font-weight:600; text-transform:uppercase;
+  letter-spacing:.1em; color:var(--muted); margin-bottom:16px;
+  display:flex; align-items:center; gap:8px;
+}
+.card-title::before {
+  content:''; display:block; width:3px; height:12px;
+  background:var(--text); border-radius:2px;
+}
+
+/* ── NOTAS ACTUALES ── */
+.notas-grid {
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:12px;
+}
+.nota-item {
+  background:var(--bg); border:1px solid var(--border); border-radius:10px;
+  padding:16px; text-align:center;
+}
+.nota-label { font-size:.68rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:6px; }
+.nota-val   { font-family:'DM Mono',monospace; font-size:1.6rem; font-weight:700; }
+
+/* ── BADGE PROMEDIO ── */
+.badge-promedio {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:4px 12px; border-radius:20px; font-family:'DM Mono',monospace;
+  font-size:.82rem; font-weight:700; border:1px solid;
+}
+.badge-malo        { background:var(--red-soft);    color:var(--red);    border-color:var(--red-border); }
+.badge-regular     { background:var(--yellow-soft); color:var(--yellow); border-color:var(--yellow-border); }
+.badge-bueno       { background:var(--green-soft);  color:var(--green);  border-color:var(--green-border); }
+.badge-excepcional { background:var(--gold-soft);   color:var(--gold);   border-color:var(--gold-border); }
+
+/* ── COMPARACIÓN ── */
+.stats-grid {
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:12px; margin-bottom:20px;
+}
+.stat-item {
+  background:var(--bg); border:1px solid var(--border); border-radius:10px;
+  padding:14px; text-align:center;
+}
+.stat-label { font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin-bottom:6px; }
+.stat-val   { font-family:'DM Mono',monospace; font-size:1.3rem; font-weight:700; }
+
+/* Barra de comparación */
+.compare-bar-wrap {
+  background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:16px;
+}
+.compare-label { font-size:.78rem; color:var(--muted); margin-bottom:8px; }
+.bar-track {
+  height:10px; background:#e8e8e4; border-radius:99px; position:relative; overflow:visible;
+  margin-bottom:6px;
+}
+.bar-fill {
+  height:100%; border-radius:99px; transition:width .8s ease;
+}
+.bar-marker {
+  position:absolute; top:-4px; width:3px; height:18px;
+  background:var(--text); border-radius:2px; transform:translateX(-50%);
+}
+.bar-marker-label {
+  position:absolute; top:20px; font-size:.62rem;
+  color:var(--muted); font-family:'DM Mono',monospace;
+  transform:translateX(-50%); white-space:nowrap;
+}
+.compare-diff {
+  font-size:.8rem; font-weight:600; margin-top:8px;
+}
+.diff-up   { color:var(--green); }
+.diff-down { color:var(--red); }
+.diff-even { color:var(--muted); }
+
+/* Posición en carrera */
+.posicion-wrap {
+  display:flex; align-items:center; gap:14px; padding:14px;
+  background:var(--bg); border:1px solid var(--border); border-radius:10px; margin-top:12px;
+}
+.posicion-num {
+  font-family:'DM Mono',monospace; font-size:2rem; font-weight:700;
+  color:var(--text); min-width:48px; text-align:center;
+}
+.posicion-info { font-size:.82rem; color:var(--muted); line-height:1.6; }
+.posicion-info b { color:var(--text); }
+
+/* ── HISTORIAL ── */
+.historial-table { width:100%; border-collapse:collapse; font-size:.82rem; }
+.historial-table th {
+  text-align:left; padding:9px 12px; background:var(--bg);
+  border:1px solid var(--border); font-size:.7rem; text-transform:uppercase;
+  letter-spacing:.06em; color:var(--muted); font-weight:600;
+}
+.historial-table td { padding:9px 12px; border:1px solid var(--border); }
+.historial-table tr:nth-child(even) td { background:#fafaf8; }
+
+.empty { text-align:center; color:var(--muted); padding:30px; font-size:.85rem; }
+
+/* ── TENDENCIA ── */
+.tendencia-wrap { display:flex; align-items:center; gap:6px; font-size:.78rem; font-weight:600; }
+.tend-up   { color:var(--green); }
+.tend-down { color:var(--red); }
+.tend-eq   { color:var(--muted); }
+
+/* Animación entrada */
+.card {
+  opacity:0; transform:translateY(10px);
+  animation: fadeUp .4s ease forwards;
+}
+.card:nth-child(1){ animation-delay:.05s; }
+.card:nth-child(2){ animation-delay:.10s; }
+.card:nth-child(3){ animation-delay:.15s; }
+.card:nth-child(4){ animation-delay:.20s; }
+@keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <span class="nav-dot"></span>
+    Mi Dashboard
+  </div>
+  <span class="nav-badge">{{ estudiante.carrera }}</span>
+  <a class="btn" href="/logout">Cerrar sesión</a>
+</nav>
+
+<main>
+  <div class="page-title">Hola, {{ estudiante.nombre }} 👋</div>
+  <p class="page-sub">Aquí puedes ver tus notas actuales, tu historial y cómo te comparas con tu carrera.</p>
+    <a class="btn" href="/estudiante/reporte_pdf" style="margin-left:auto;">
+  ⬇ Descargar PDF
+</a>
+  {# ── NOTAS ACTUALES ── #}
+  <div class="card">
+    <div class="card-title">Mis notas actuales</div>
+    <div class="notas-grid">
+
+      <div class="nota-item">
+        <div class="nota-label">Nota 1</div>
+        <div class="nota-val">{{ estudiante.nota1 }}</div>
+      </div>
+      <div class="nota-item">
+        <div class="nota-label">Nota 2</div>
+        <div class="nota-val">{{ estudiante.nota2 }}</div>
+      </div>
+      <div class="nota-item">
+        <div class="nota-label">Nota 3</div>
+        <div class="nota-val">{{ estudiante.nota3 }}</div>
+      </div>
+
+      {# Tarjeta de promedio con color según nivel #}
+      <div class="nota-item">
+        <div class="nota-label">Promedio</div>
+        <div style="margin-top:4px">
+          {% set p = estudiante.promedio %}
+          {% if p == 5.0 %}
+            <span class="badge-promedio badge-excepcional">⭐ {{ p }}</span>
+          {% elif p >= 4.0 %}
+            <span class="badge-promedio badge-bueno">🟢 {{ p }}</span>
+          {% elif p >= 3.0 %}
+            <span class="badge-promedio badge-regular">🟡 {{ p }}</span>
+          {% else %}
+            <span class="badge-promedio badge-malo">🔴 {{ p }}</span>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  {# ── COMPARACIÓN CON LA CARRERA ── #}
+  <div class="card">
+    <div class="card-title">Comparación con {{ estudiante.carrera }}</div>
+
+    {# Tarjetas de estadísticas de la carrera #}
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-label">Promedio carrera</div>
+        <div class="stat-val">{{ stats.promedio_carrera or '—' }}</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Total estudiantes</div>
+        <div class="stat-val">{{ stats.total or 0 }}</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Aprobados</div>
+        <div class="stat-val" style="color:var(--green)">{{ stats.aprobados or 0 }}</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Reprobados</div>
+        <div class="stat-val" style="color:var(--red)">{{ stats.reprobados or 0 }}</div>
+      </div>
+    </div>
+
+    {# Barra visual que muestra tu promedio vs el promedio de la carrera #}
+    <div class="compare-bar-wrap">
+      <div class="compare-label">Tu promedio vs promedio de la carrera (escala 0 – 5)</div>
+
+      {# Barra del estudiante #}
+      <div style="margin-bottom:18px; margin-top:8px;">
+        <div style="font-size:.7rem;color:var(--muted);margin-bottom:4px;">Tú</div>
+        <div class="bar-track">
+          {% set pct_yo = (estudiante.promedio / 5 * 100)|round(1) %}
+          {% if estudiante.promedio >= 4.0 %}
+            <div class="bar-fill" style="width:{{ pct_yo }}%; background:var(--green)"></div>
+          {% elif estudiante.promedio >= 3.0 %}
+            <div class="bar-fill" style="width:{{ pct_yo }}%; background:var(--yellow)"></div>
+          {% else %}
+            <div class="bar-fill" style="width:{{ pct_yo }}%; background:var(--red)"></div>
+          {% endif %}
+          {# Marcador del promedio de la carrera para referencia visual #}
+          {% if stats.promedio_carrera %}
+            {% set pct_carrera = (stats.promedio_carrera / 5 * 100)|round(1) %}
+            <div class="bar-marker" style="left:{{ pct_carrera }}%">
+              <div class="bar-marker-label">Carrera: {{ stats.promedio_carrera }}</div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      {# Mensaje de diferencia #}
+      {% if diferencia > 0 %}
+        <div class="compare-diff diff-up">
+          ↑ Estás {{ diferencia }} puntos por encima del promedio de tu carrera
+        </div>
+      {% elif diferencia < 0 %}
+        <div class="compare-diff diff-down">
+          ↓ Estás {{ diferencia|abs }} puntos por debajo del promedio de tu carrera
+        </div>
+      {% else %}
+        <div class="compare-diff diff-even">
+          → Estás exactamente en el promedio de tu carrera
+        </div>
+      {% endif %}
+    </div>
+
+    {# Posición dentro de la carrera #}
+    {% if posicion %}
+    <div class="posicion-wrap">
+      <div class="posicion-num"># {{ posicion }}</div>
+      <div class="posicion-info">
+        Ocupas el <b>puesto {{ posicion }}</b> de <b>{{ stats.total }}</b>
+        estudiantes en <b>{{ estudiante.carrera }}</b>
+        {% if posicion == 1 %}— 🏆 ¡Eres el mejor de tu carrera!
+        {% elif posicion <= (stats.total * 0.1)|int + 1 %}— estás en el top 10%
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  {# ── HISTORIAL DE NOTAS ── #}
+  <div class="card">
+    <div class="card-title">Historial de cambios de notas</div>
+
+    {% if historial %}
+      <table class="historial-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Fecha</th>
+            <th>Nota 1</th>
+            <th>Nota 2</th>
+            <th>Nota 3</th>
+            <th>Promedio</th>
+            <th>Tendencia</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for h in historial %}
+          <tr>
+            <td style="color:var(--muted); font-family:'DM Mono',monospace">{{ loop.index }}</td>
+            <td style="font-family:'DM Mono',monospace; font-size:.78rem">{{ h.fecha_fmt }}</td>
+            <td>{{ h.nota1 }}</td>
+            <td>{{ h.nota2 }}</td>
+            <td>{{ h.nota3 }}</td>
+            <td>
+              {# Color del promedio histórico #}
+              {% if h.promedio == 5.0 %}
+                <span class="badge-promedio badge-excepcional" style="font-size:.72rem; padding:2px 8px">⭐ {{ h.promedio }}</span>
+              {% elif h.promedio >= 4.0 %}
+                <span class="badge-promedio badge-bueno" style="font-size:.72rem; padding:2px 8px">🟢 {{ h.promedio }}</span>
+              {% elif h.promedio >= 3.0 %}
+                <span class="badge-promedio badge-regular" style="font-size:.72rem; padding:2px 8px">🟡 {{ h.promedio }}</span>
+              {% else %}
+                <span class="badge-promedio badge-malo" style="font-size:.72rem; padding:2px 8px">🔴 {{ h.promedio }}</span>
+              {% endif %}
+            </td>
+            <td>
+              {# Compara con el registro anterior para mostrar si subió o bajó #}
+              {% if not loop.last %}
+                {% set anterior = historial[loop.index] %}
+                {% if h.promedio > anterior.promedio %}
+                  <span class="tendencia-wrap tend-up">↑ subió</span>
+                {% elif h.promedio < anterior.promedio %}
+                  <span class="tendencia-wrap tend-down">↓ bajó</span>
+                {% else %}
+                  <span class="tendencia-wrap tend-eq">→ igual</span>
+                {% endif %}
+              {% else %}
+                <span style="color:var(--muted); font-size:.75rem">registro inicial</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+    {% else %}
+      <div class="empty">
+        Aún no hay cambios registrados en tus notas.<br>
+        <span style="font-size:.78rem">Cuando un administrador o profesor modifique tus notas aparecerán aquí.</span>
+      </div>
+    {% endif %}
+  </div>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,517 @@
+<!-- Carga_masiva -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carga Masiva</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:         #f7f7f5;
+            --surface:    #ffffff;
+            --border:     #e8e8e4;
+            --text:       #1a1a18;
+            --muted:      #9a9a94;
+            --green:      #27ae60;
+            --green-soft: #eafaf1;
+            --green-border:#a9dfbf;
+            --red:        #c0392b;
+            --red-soft:   #fdf0ee;
+            --red-border: #f0cdc9;
+            --yellow:     #d4ac0d;
+            --yellow-soft:#fefaec;
+            --yellow-border:#f7dc6f;
+            --blue:       #2980b9;
+            --blue-soft:  #eaf4fb;
+            --nav-h:      60px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: var(--nav-h);
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center;
+            padding: 0 28px; z-index: 100;
+        }
+
+        .nav-brand {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 0.95rem; font-weight: 600; flex: 1;
+        }
+
+        .nav-brand-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text); }
+
+        .btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 7px 16px; border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.82rem; font-weight: 500;
+            cursor: pointer; border: 1px solid var(--border);
+            background: var(--surface); color: var(--text);
+            text-decoration: none; transition: background 0.15s;
+        }
+        .btn:hover { background: var(--bg); }
+
+        main {
+            padding-top: calc(var(--nav-h) + 40px);
+            padding-bottom: 60px;
+            max-width: 800px;
+            margin: 0 auto;
+            padding-left: 24px;
+            padding-right: 24px;
+        }
+
+        h1 { font-size: 1.6rem; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 6px; }
+        .subtitle { color: var(--muted); font-size: 0.88rem; margin-bottom: 32px; }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 28px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 0.78rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            color: var(--muted); margin-bottom: 16px;
+        }
+
+        /* ── DROP ZONE ── */
+        .dropzone {
+            border: 2px dashed var(--border);
+            border-radius: 10px; padding: 40px 20px;
+            text-align: center; cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            position: relative;
+        }
+        .dropzone:hover, .dropzone.drag-over { border-color: var(--text); background: var(--bg); }
+        .dropzone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+        .dropzone-icon { font-size: 2rem; margin-bottom: 10px; }
+        .dropzone-text { font-size: 0.9rem; color: var(--muted); }
+        .dropzone-text strong { color: var(--text); font-weight: 600; }
+        .file-name { margin-top: 12px; font-family: 'DM Mono', monospace; font-size: 0.8rem; color: var(--text); display: none; }
+
+        /* ── FORMATO ── */
+        .format-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+        .format-table th {
+            text-align: left; padding: 8px 12px;
+            background: var(--bg); border: 1px solid var(--border);
+            font-family: 'DM Mono', monospace; font-weight: 500; color: var(--muted);
+        }
+        .format-table td { padding: 8px 12px; border: 1px solid var(--border); }
+
+        /* ── BOTÓN SUBIR ── */
+        .btn-upload {
+            width: 100%; padding: 12px;
+            background: var(--text); color: white;
+            border: none; border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.95rem; font-weight: 600;
+            cursor: pointer; margin-top: 20px;
+            transition: opacity 0.2s;
+        }
+        .btn-upload:hover { opacity: 0.85; }
+        .btn-upload:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .loader { display: none; text-align: center; padding: 20px; color: var(--muted); font-size: 0.88rem; }
+
+        /* ── RESUMEN STATS ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+            border: 1px solid;
+        }
+
+        .stat-card.ok    { background: var(--green-soft);  border-color: var(--green-border); color: #1e8449; }
+        .stat-card.dup   { background: var(--yellow-soft); border-color: var(--yellow-border); color: #7d6608; }
+        .stat-card.vac   { background: var(--blue-soft);   border-color: #aed6f1; color: var(--blue); }
+        .stat-card.inv   { background: var(--red-soft);    border-color: var(--red-border); color: var(--red); }
+
+        .stat-card .stat-num {
+            font-size: 2rem; font-weight: 700;
+            font-family: 'DM Mono', monospace;
+            display: block; line-height: 1;
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.78rem; margin-top: 6px;
+            font-weight: 500; opacity: 0.8;
+        }
+
+        /* ── TABLA DE ERRORES ── */
+        .error-section { display: none; }
+
+        .error-section.visible { display: block; }
+
+        .error-section h3 {
+            font-size: 0.95rem; font-weight: 600;
+            margin-bottom: 14px; color: var(--text);
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .error-table {
+            width: 100%; border-collapse: collapse;
+            font-size: 0.83rem;
+        }
+
+        .error-table th {
+            text-align: left; padding: 10px 14px;
+            background: var(--bg); border: 1px solid var(--border);
+            font-weight: 600; color: var(--muted);
+            font-size: 0.75rem; text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .error-table td {
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        .error-table tr:nth-child(even) td { background: var(--bg); }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 10px; border-radius: 20px;
+            font-size: 0.75rem; font-weight: 600;
+        }
+
+        .badge-dup  { background: var(--yellow-soft); color: #7d6608; border: 1px solid var(--yellow-border); }
+        .badge-inv  { background: var(--red-soft);    color: var(--red); border: 1px solid var(--red-border); }
+        .badge-vac  { background: var(--blue-soft);   color: var(--blue); border: 1px solid #aed6f1; }
+
+        .success-banner {
+            background: var(--green-soft);
+            border: 1px solid var(--green-border);
+            border-radius: 10px; padding: 16px 20px;
+            color: #1e8449; font-weight: 600;
+            margin-bottom: 20px; display: none;
+            font-size: 0.92rem;
+        }
+
+        .error-banner {
+            background: var(--red-soft);
+            border: 1px solid var(--red-border);
+            border-radius: 10px; padding: 16px 20px;
+            color: var(--red); font-weight: 600;
+            margin-bottom: 20px; display: none;
+            font-size: 0.92rem;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-brand">
+        <span class="nav-brand-dot"></span>
+        Carga Masiva de Estudiantes
+    </div>
+    <a class="btn" href="/dashprincipal">← Volver al dashboard</a>
+</nav>
+
+<main>
+    <h1>Carga masiva</h1>
+    <p class="subtitle">Sube un archivo Excel. Los datos serán limpiados, validados y se te mostrará un reporte detallado de los registros rechazados.</p>
+
+    <!-- FORMATO ESPERADO -->
+    <div class="card">
+        <div class="card-title">Formato esperado del Excel</div>
+        <table class="format-table">
+            <thead>
+                <tr><th>nombre</th><th>edad</th><th>carrera</th><th>nota1</th><th>nota2</th><th>nota3</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Juan Pérez</td><td>20</td><td>Ingeniería</td><td>4.5</td><td>3.8</td><td>4.0</td></tr>
+                <tr><td>María López</td><td>22</td><td>Medicina</td><td>5.0</td><td>4.7</td><td>4.9</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- UPLOAD -->
+    <div class="card">
+        <div class="card-title">Seleccionar archivo</div>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <div class="dropzone" id="dropzone">
+                <input type="file" name="archivo" id="fileInput" accept=".xlsx,.xls">
+                <div class="dropzone-icon">📂</div>
+                <div class="dropzone-text">
+                    <strong>Arrastra tu archivo aquí</strong><br>
+                    o haz clic para seleccionarlo (.xlsx, .xls)
+                </div>
+                <div class="file-name" id="fileName"></div>
+            </div>
+            <button type="submit" class="btn-upload" id="btnUpload" disabled>Subir y procesar</button>
+        </form>
+        <div class="loader" id="loader">⏳ Procesando archivo...</div>
+    </div>
+
+    <!-- RESULTADO -->
+    <div id="resultadoSection" style="display:none">
+
+        <div class="success-banner" id="successBanner"></div>
+        <div class="error-banner"  id="errorBanner"></div>
+
+        <!-- STATS -->
+        <div class="card">
+            <div class="card-title">Resumen de la carga</div>
+            <div class="stats-grid">
+                <div class="stat-card ok">
+                    <span class="stat-num" id="statInsertados">0</span>
+                    <div class="stat-label">✅ Insertados</div>
+                </div>
+                <div class="stat-card dup">
+                    <span class="stat-num" id="statDuplicados">0</span>
+                    <div class="stat-label">⚠️ Duplicados</div>
+                </div>
+                <div class="stat-card vac">
+                    <span class="stat-num" id="statVacios">0</span>
+                    <div class="stat-label">🔲 Vacíos</div>
+                </div>
+                <div class="stat-card inv">
+                    <span class="stat-num" id="statInvalidos">0</span>
+                    <div class="stat-label">❌ Inválidos</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLA DE RECHAZADOS -->
+        <div class="card error-section" id="errorSection">
+            <div class="card-title">Registros rechazados</div>
+            <h3>Detalle de los datos que no se pudieron subir</h3>
+            <table class="error-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Estudiante</th>
+                        <th>Motivo del rechazo</th>
+                        <th>Tipo</th>
+                    </tr>
+                </thead>
+                <tbody id="errorTableBody"></tbody>
+            </table>
+        </div>
+
+    </div>
+</main>
+
+<script>
+    // ── REFERENCIAS AL DOM ───────────────────────────────────────────────────
+    // Obtenemos los elementos HTML que vamos a necesitar manipular
+    const fileInput  = document.getElementById('fileInput');   // input type="file" oculto
+    const fileName   = document.getElementById('fileName');    // div que muestra el nombre del archivo
+    const btnUpload  = document.getElementById('btnUpload');   // botón "Subir y procesar"
+    const dropzone   = document.getElementById('dropzone');    // zona de arrastrar y soltar
+    const form       = document.getElementById('uploadForm');  // formulario completo
+    const loader     = document.getElementById('loader');      // spinner de "Procesando..."
+
+
+    // ── EVENTO: CUANDO EL USUARIO SELECCIONA UN ARCHIVO ─────────────────────
+    fileInput.addEventListener('change', () => {
+        // Si hay al menos un archivo seleccionado...
+        if (fileInput.files.length > 0) {
+            // Mostramos el nombre del archivo debajo del dropzone
+            fileName.textContent = '📄 ' + fileInput.files[0].name;
+            fileName.style.display = 'block';
+            // Habilitamos el botón de subir (estaba deshabilitado por defecto)
+            btnUpload.disabled = false;
+        }
+    });
+
+
+    // ── EVENTOS: DRAG & DROP ─────────────────────────────────────────────────
+
+    // Cuando el usuario arrastra un archivo ENCIMA de la zona (sin soltar)
+    dropzone.addEventListener('dragover', e => {
+        e.preventDefault(); // necesario para permitir el drop
+        dropzone.classList.add('drag-over'); // cambia el estilo visual (borde activo)
+    });
+
+    // Cuando el archivo sale de la zona sin soltarse
+    dropzone.addEventListener('dragleave', () => {
+        dropzone.classList.remove('drag-over'); // vuelve al estilo normal
+    });
+
+    // Cuando el usuario suelta el archivo en la zona
+    dropzone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropzone.classList.remove('drag-over');
+        // Asignamos los archivos soltados al input de archivo
+        fileInput.files = e.dataTransfer.files;
+        // Disparamos manualmente el evento 'change' para que se ejecute
+        // el listener de arriba y muestre el nombre del archivo
+        fileInput.dispatchEvent(new Event('change'));
+    });
+
+
+    // ── EVENTO: ENVÍO DEL FORMULARIO ────────────────────────────────────────
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault(); // evitamos que la página recargue (comportamiento por defecto del form)
+
+        // Mostramos el spinner y deshabilitamos el botón para evitar doble envío
+        loader.style.display = 'block';
+        btnUpload.disabled = true;
+        document.getElementById('resultadoSection').style.display = 'none'; // ocultamos resultados anteriores
+
+        // Creamos un FormData para enviar el archivo como multipart/form-data
+        // (necesario para subir archivos con fetch)
+        const formData = new FormData();
+        formData.append('archivo', fileInput.files[0]); // adjuntamos el archivo Excel
+
+        try {
+            // Enviamos el archivo al servidor Flask con POST a /carga_masiva
+            const res  = await fetch('/carga_masiva', { method: 'POST', body: formData });
+            // Parseamos la respuesta JSON que devuelve Flask
+            const data = await res.json();
+
+            // Ocultamos el spinner y mostramos la sección de resultados
+            loader.style.display = 'none';
+            document.getElementById('resultadoSection').style.display = 'block';
+
+            // ── CASO: el servidor procesó el archivo sin errores fatales ──
+            if (data.ok) {
+
+                // Mostramos el banner verde de éxito con el conteo de insertados
+                const banner = document.getElementById('successBanner');
+                banner.style.display = 'block';
+                banner.textContent = `✅ Archivo procesado correctamente. Se insertaron ${data.insertados} estudiante(s).`;
+                document.getElementById('errorBanner').style.display = 'none'; // ocultamos el banner rojo
+
+                // Actualizamos las 4 tarjetas de estadísticas con los conteos del servidor
+                document.getElementById('statInsertados').textContent = data.insertados; // registros OK
+                document.getElementById('statDuplicados').textContent = data.duplicados; // ya existían en BD
+                document.getElementById('statVacios').textContent     = data.vacios;     // filas sin datos
+                document.getElementById('statInvalidos').textContent  = data.invalidos;  // datos fuera de rango
+
+                // ── TABLA DE RECHAZADOS ──────────────────────────────────
+                const tbody = document.getElementById('errorTableBody');
+                tbody.innerHTML = ''; // limpiamos la tabla antes de llenarla
+
+                // Si el servidor devolvió mensajes de error (detalles de rechazados)...
+                if (data.detalles && data.detalles.length > 0) {
+                    document.getElementById('errorSection').classList.add('visible'); // mostramos la tabla
+
+                    // Iteramos cada mensaje de error devuelto por el backend
+                    data.detalles.forEach((msg, i) => {
+                        // Parseamos el mensaje para extraer: nombre, motivo legible y tipo de error
+                        const { nombre, motivo, tipo } = parsearError(msg);
+
+                        // Elegimos el color del badge según el tipo de error
+                        const badgeClass = tipo === 'Duplicado' ? 'badge-dup'  // amarillo
+                                         : tipo === 'Vacío'     ? 'badge-vac'  // azul
+                                         : 'badge-inv';                         // rojo (inválido)
+
+                        // Agregamos una fila a la tabla de rechazados
+                        tbody.innerHTML += `
+                            <tr>
+                                <td style="color:var(--muted);font-family:'DM Mono',monospace">${i + 1}</td>
+                                <td><strong>${nombre}</strong></td>
+                                <td>${motivo}</td>
+                                <td><span class="badge ${badgeClass}">${tipo}</span></td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    // No hubo rechazados: ocultamos la tabla de errores
+                    document.getElementById('errorSection').classList.remove('visible');
+                }
+
+            // ── CASO: error fatal en el servidor (ej: columnas faltantes) ──
+            } else {
+                // Mostramos el banner rojo con el mensaje de error del servidor
+                const banner = document.getElementById('errorBanner');
+                banner.style.display = 'block';
+                banner.textContent = '❌ ' + data.error;
+                document.getElementById('successBanner').style.display = 'none';
+                document.getElementById('errorSection').classList.remove('visible');
+            }
+
+        // ── CASO: error de red (servidor caído, timeout, etc.) ──────────
+        } catch (err) {
+            loader.style.display = 'none';
+            const banner = document.getElementById('errorBanner');
+            banner.style.display = 'block';
+            banner.textContent = '❌ Error de conexión al servidor.';
+            document.getElementById('resultadoSection').style.display = 'block';
+        }
+
+        // Volvemos a habilitar el botón al terminar (éxito o error)
+        btnUpload.disabled = false;
+    });
+
+
+    // ── FUNCIÓN: parsearError(msg) ───────────────────────────────────────────
+    // Recibe un string de error crudo que viene del backend (database.py)
+    // y lo convierte en un objeto { nombre, motivo, tipo } legible para el usuario.
+    // Los mensajes del backend siguen patrones fijos que detectamos con regex.
+    function parsearError(msg) {
+        let nombre = "Desconocido"; // nombre del estudiante afectado
+        let motivo = msg;           // descripción del problema (por defecto el mensaje crudo)
+        let tipo   = "Inválido";    // categoría: Duplicado / Vacío / Inválido
+
+        // ── Duplicado en BD: "Ya existe en BD — Nombre (Carrera, X años)" ──
+        if (msg.includes("Ya existe en BD")) {
+            tipo = "Duplicado";
+            const match = msg.match(/— (.+)/); // extrae todo lo que viene después de "— "
+            if (match) nombre = match[1];
+            motivo = "Ya existe un estudiante con el mismo nombre, carrera y edad en la base de datos.";
+
+        // ── Edad inválida: "Edad inválida (14) — Pedro Gómez" ──────────────
+        } else if (msg.includes("Edad inválida")) {
+            tipo = "Inválido";
+            const matchEdad   = msg.match(/\((.+?)\)/); // extrae el valor entre paréntesis
+            const matchNombre = msg.match(/— (.+)/);    // extrae el nombre después de "— "
+            if (matchNombre) nombre = matchNombre[1];
+            const val = matchEdad ? matchEdad[1] : "?";
+            motivo = `La edad (${val}) está fuera del rango permitido (15 – 80 años).`;
+
+        // ── Nota inválida: "nota1 inválida (6.0) — Daniela Cruz" ───────────
+        } else if (msg.match(/nota\d inválida/i)) {
+            tipo = "Inválido";
+            const matchNota   = msg.match(/(nota\d)/i); // cuál nota (nota1, nota2, nota3)
+            const matchVal    = msg.match(/\((.+?)\)/); // el valor inválido
+            const matchNombre = msg.match(/— (.+)/);    // el nombre del estudiante
+            if (matchNombre) nombre = matchNombre[1];
+            const notaNum = matchNota ? matchNota[1] : "nota";
+            const val     = matchVal  ? matchVal[1]  : "?";
+            motivo = `La ${notaNum} (${val}) está fuera del rango permitido (0.0 – 5.0).`;
+
+        // ── Error de inserción en BD: "Error insertando Nombre: ..." ────────
+        } else if (msg.includes("Error insertando")) {
+            tipo = "Inválido";
+            const match = msg.match(/Error insertando (.+?):/); // extrae el nombre antes de ":"
+            if (match) nombre = match[1];
+            motivo = "Error al insertar en la base de datos.";
+
+        // ── Fila vacía: contiene "vacío" o "vacio" ───────────────────────
+        } else if (msg.includes("vacío") || msg.includes("vacio")) {
+            tipo = "Vacío";
+        }
+
+        return { nombre, motivo, tipo };
+    }
+</script>
+
+</body>
+</html>

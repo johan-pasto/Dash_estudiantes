@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Iniciar Sesión</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@1&family=DM+Mono:wght@300;500&display=swap" rel="stylesheet"/>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  min-height: 100dvh;
+  background: #f7f5f0;
+  font-family: 'DM Mono', monospace;
+  display: grid;
+  place-items: center;
+}
+
+.card {
+  width: 100%;
+  max-width: 380px;
+  padding: 3rem 2.5rem;
+  background: #fff;
+  border: 1px solid #e0dbd2;
+  box-shadow: 0 4px 32px rgba(0,0,0,.06);
+
+  opacity: 0;
+  transform: translateY(14px);
+  animation: in .5s ease forwards .1s;
+}
+
+@keyframes in { to { opacity:1; transform:translateY(0); } }
+
+h1 {
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: 1.9rem;
+  color: #0d0d0f;
+  margin-bottom: 2.2rem;
+}
+
+label {
+  display: block;
+  font-size: .68rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #8c8578;
+  margin-bottom: .45rem;
+}
+
+input {
+  width: 100%;
+  padding: .8rem 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid #d5cfc5;
+  font-family: 'DM Mono', monospace;
+  font-size: .95rem;
+  color: #0d0d0f;
+  outline: none;
+  transition: border-color .2s;
+  margin-bottom: 1.4rem;
+}
+input:focus { border-bottom-color: #1a1a2e; }
+input::placeholder { color: #ccc; }
+
+button {
+  width: 100%;
+  margin-top: .6rem;
+  padding: .9rem;
+  background: #1a1a2e;
+  color: #fff;
+  border: none;
+  font-family: 'DM Mono', monospace;
+  font-size: .78rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background .2s;
+}
+button:hover { background: #2d2d50; }
+
+.err {
+  font-size: .68rem;
+  color: #c0392b;
+  margin-top: .5rem;
+  min-height: 1em;
+  opacity: 0;
+  transition: opacity .2s;
+}
+.err.show { opacity: 1; }
+
+@keyframes shake {
+  20%{ transform:translateX(-5px); }
+  40%{ transform:translateX(5px); }
+  60%{ transform:translateX(-3px); }
+  80%{ transform:translateX(3px); }
+}
+.shake { animation: shake .3s ease; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Iniciar sesión</h1>
+
+  <form id="f" action="/" method="POST" novalidate>
+    <label for="u">Usuario</label>
+    <input id="u" type="text" name="usuario" placeholder="tu.usuario" autocomplete="username" required/>
+
+    <label for="p">Contraseña</label>
+    <input id="p" type="password" name="contraseña" placeholder="••••••••" autocomplete="current-password" required/>
+    
+    {% if error %}
+    <div class="err show">{{ error }}</div>
+    {% endif %}
+
+    <button type="submit">Entrar →</button>
+  </form>
+</div>
+
+<script>
+
+
+// Konami
+const k = [38,38,40,40,37,39,37,39,66,65]; let i = 0;
+document.addEventListener('keydown', e => {
+  i = e.keyCode === k[i] ? i+1 : 0;
+  if (i === k.length) location.href = '/juego';
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dashboard Profesor</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:      #f7f7f5;
+  --surface: #ffffff;
+  --border:  #e8e8e4;
+  --text:    #1a1a18;
+  --muted:   #9a9a94;
+  --green:   #27ae60;  --green-soft: #eafaf1;  --green-border: #a9dfbf;
+  --red:     #c0392b;  --red-soft:   #fdf0ee;  --red-border:   #f0cdc9;
+  --yellow:  #d4ac0d;  --yellow-soft:#fefaec;  --yellow-border:#f7dc6f;
+  --gold:    #c9a84c;  --gold-soft:  #fdf5e0;  --gold-border:  #f0d080;
+  --blue:    #2980b9;  --blue-soft:  #eaf4fb;  --blue-border:  #aed6f1;
+  --nav-h:   60px;
+}
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+/* ── NAV ── */
+nav {
+  position:fixed; top:0; left:0; right:0; height:var(--nav-h);
+  background:var(--surface); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; padding:0 28px; z-index:100; gap:10px;
+}
+.nav-brand { display:flex; align-items:center; gap:8px; font-size:.95rem; font-weight:600; flex:1; }
+.nav-dot   { width:8px; height:8px; border-radius:50%; background:var(--text); }
+.nav-badge {
+  background:var(--bg); border:1px solid var(--border); border-radius:20px;
+  padding:4px 12px; font-family:'DM Mono',monospace; font-size:.78rem; color:var(--muted);
+}
+.btn {
+  display:inline-flex; align-items:center; gap:6px; padding:7px 16px;
+  border-radius:8px; font-family:'DM Sans',sans-serif; font-size:.82rem;
+  font-weight:500; cursor:pointer; border:1px solid var(--border);
+  background:var(--surface); color:var(--text); text-decoration:none;
+  transition:background .15s;
+}
+.btn:hover { background:var(--bg); }
+.btn:active { transform:scale(.97); }
+.btn-excel {
+  background:var(--green-soft); color:var(--green);
+  border-color:var(--green-border);
+}
+.btn-excel:hover { background:#d4f5e3; }
+.btn-logout {
+  background:var(--red-soft); color:var(--red);
+  border-color:var(--red-border);
+}
+.btn-logout:hover { background:#fbe0dc; }
+
+/* ── LAYOUT ── */
+main {
+  padding-top:calc(var(--nav-h) + 36px);
+  padding-bottom:60px; max-width:1100px;
+  margin:0 auto; padding-left:24px; padding-right:24px;
+}
+.page-title { font-size:1.5rem; font-weight:600; letter-spacing:-.02em; margin-bottom:4px; }
+.page-sub   { color:var(--muted); font-size:.88rem; margin-bottom:28px; }
+
+/* ── CARDS ── */
+.card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:12px; padding:24px; margin-bottom:20px;
+  opacity:0; transform:translateY(10px);
+  animation:fadeUp .4s ease forwards;
+}
+.card:nth-child(1){ animation-delay:.05s; }
+.card:nth-child(2){ animation-delay:.10s; }
+.card:nth-child(3){ animation-delay:.15s; }
+.card:nth-child(4){ animation-delay:.20s; }
+@keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
+
+.card-header {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:16px; gap:10px; flex-wrap:wrap;
+}
+.card-title {
+  font-size:.75rem; font-weight:600; text-transform:uppercase;
+  letter-spacing:.1em; color:var(--muted);
+  display:flex; align-items:center; gap:8px;
+}
+.card-title::before {
+  content:''; display:block; width:3px; height:12px;
+  background:var(--text); border-radius:2px;
+}
+
+/* ── KPIs ── */
+.kpi-grid {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px;
+}
+.kpi-item {
+  background:var(--bg); border:1px solid var(--border);
+  border-radius:10px; padding:16px; text-align:center;
+}
+.kpi-label { font-size:.68rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:6px; }
+.kpi-val   { font-family:'DM Mono',monospace; font-size:1.8rem; font-weight:700; }
+.kpi-val.red    { color:var(--red); }
+.kpi-val.green  { color:var(--green); }
+.kpi-val.yellow { color:var(--yellow); }
+.kpi-val.gold   { color:var(--gold); }
+
+/* ── ALERTA REPROBADOS ── */
+.alerta-reprobados {
+  background:var(--red-soft); border:1px solid var(--red-border);
+  border-radius:8px; padding:12px 16px; font-size:.85rem;
+  color:var(--red); font-weight:500; display:flex; align-items:center; gap:8px;
+  margin-bottom:16px;
+}
+.alerta-reprobados.hidden { display:none; }
+
+/* ── GRÁFICA ── */
+.chart-wrap {
+  display:grid; grid-template-columns:1fr 1fr; gap:20px;
+}
+@media(max-width:640px){ .chart-wrap { grid-template-columns:1fr; } }
+.chart-box {
+  background:var(--bg); border:1px solid var(--border);
+  border-radius:10px; padding:16px;
+}
+.chart-box-title {
+  font-size:.72rem; font-weight:600; text-transform:uppercase;
+  letter-spacing:.08em; color:var(--muted); margin-bottom:12px;
+}
+
+/* ── BÚSQUEDA ── */
+.search-row { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+.search-input {
+  flex:1; min-width:180px; padding:9px 12px;
+  border:1px solid var(--border); border-radius:8px;
+  font-family:'DM Sans',sans-serif; font-size:.88rem;
+  background:var(--bg); color:var(--text); transition:border-color .15s;
+}
+.search-input:focus { outline:none; border-color:var(--text); background:#fff; }
+.filter-select {
+  padding:9px 12px; border:1px solid var(--border); border-radius:8px;
+  font-family:'DM Sans',sans-serif; font-size:.85rem;
+  background:var(--bg); color:var(--text); cursor:pointer;
+}
+.filter-select:focus { outline:none; }
+
+/* ── TABLA ── */
+.tabla-wrap { overflow-x:auto; }
+.results-table { width:100%; border-collapse:collapse; font-size:.83rem; }
+.results-table th {
+  text-align:left; padding:9px 12px; background:var(--bg);
+  border:1px solid var(--border); font-size:.7rem; text-transform:uppercase;
+  letter-spacing:.06em; color:var(--muted); font-weight:600;
+}
+.results-table td { padding:9px 12px; border:1px solid var(--border); }
+.results-table tr:nth-child(even) td { background:#fafaf8; }
+.results-table tr.clickable { cursor:pointer; transition:background .1s; }
+.results-table tr.clickable:hover td { background:#f0f0ee !important; }
+
+/* Badge promedio */
+.badge-p {
+  display:inline-flex; align-items:center; gap:4px;
+  padding:2px 8px; border-radius:20px;
+  font-family:'DM Mono',monospace; font-size:.75rem; font-weight:700; border:1px solid;
+}
+.badge-malo        { background:var(--red-soft);    color:var(--red);    border-color:var(--red-border); }
+.badge-regular     { background:var(--yellow-soft); color:var(--yellow); border-color:var(--yellow-border); }
+.badge-bueno       { background:var(--green-soft);  color:var(--green);  border-color:var(--green-border); }
+.badge-excepcional { background:var(--gold-soft);   color:var(--gold);   border-color:var(--gold-border); }
+
+.btn-edit-row {
+  padding:4px 10px; border-radius:6px; border:1px solid var(--blue-border);
+  background:var(--blue-soft); color:var(--blue);
+  font-size:.75rem; font-weight:600; cursor:pointer; transition:background .15s;
+}
+.btn-edit-row:hover { background:#d0eaf8; }
+
+.results-count { font-size:.75rem; color:var(--muted); font-family:'DM Mono',monospace; margin-bottom:8px; }
+.no-results    { text-align:center; color:var(--muted); padding:30px; font-size:.85rem; }
+
+/* ── MODAL EDITAR ── */
+.modal-backdrop {
+  position:fixed; inset:0; background:rgba(0,0,0,.45);
+  z-index:200; display:none; align-items:center; justify-content:center;
+}
+.modal-backdrop.visible { display:flex; }
+.modal {
+  background:#fff; border-radius:12px; padding:28px;
+  max-width:480px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,.15);
+  animation:fadeUp .25s ease;
+}
+.modal h3 { font-size:1rem; font-weight:600; margin-bottom:4px; }
+.modal .modal-sub { font-size:.8rem; color:var(--muted); margin-bottom:20px; }
+.form-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px; }
+.form-group { display:flex; flex-direction:column; gap:5px; }
+.form-group label {
+  font-size:.68rem; font-weight:600; color:var(--muted);
+  text-transform:uppercase; letter-spacing:.06em;
+}
+.form-group input {
+  padding:8px 10px; border:1px solid var(--border); border-radius:8px;
+  font-family:'DM Sans',sans-serif; font-size:.9rem;
+  background:var(--bg); color:var(--text); transition:border-color .15s;
+}
+.form-group input:focus { outline:none; border-color:var(--text); background:#fff; }
+.modal-actions { display:flex; gap:8px; justify-content:flex-end; }
+.btn-save {
+  padding:9px 22px; background:var(--text); color:#fff;
+  border:none; border-radius:8px; font-family:'DM Sans',sans-serif;
+  font-size:.88rem; font-weight:600; cursor:pointer; transition:opacity .15s;
+}
+.btn-save:hover { opacity:.85; }
+.btn-cancel {
+  padding:9px 18px; background:var(--bg); color:var(--muted);
+  border:1px solid var(--border); border-radius:8px;
+  font-family:'DM Sans',sans-serif; font-size:.88rem; cursor:pointer;
+}
+.btn-cancel:hover { background:#eeeeec; }
+.msg { padding:10px 14px; border-radius:8px; font-size:.82rem; font-weight:500; margin-top:14px; display:none; }
+.msg.success { background:var(--green-soft); border:1px solid var(--green-border); color:#1e8449; display:block; }
+.msg.error   { background:var(--red-soft);   border:1px solid var(--red-border);   color:var(--red); display:block; }
+
+/* Promedio preview en modal */
+.promedio-preview {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 14px; border-radius:8px; margin-top:4px;
+  border:1px solid var(--border); background:var(--bg);
+  font-family:'DM Mono',monospace; font-size:.9rem; font-weight:700;
+  transition:all .2s;
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <span class="nav-dot"></span>
+    Dashboard Profesor
+  </div>
+  <span class="nav-badge">{{ carrera }}</span>
+  <a class="btn btn-excel" href="/profesor/exportar_excel" title="Exportar a Excel">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Exportar Excel
+  </a>
+  <a class="btn btn-logout" href="/logout">Cerrar sesión</a>
+</nav>
+
+<main>
+  <div class="page-title">Hola, {{ usuario }} 👋</div>
+  <p class="page-sub">Gestiona los estudiantes de <strong>{{ carrera }}</strong> — edita notas, revisa el rendimiento y exporta reportes.</p>
+
+  {# ── KPIs ── #}
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Resumen de la carrera</div>
+    </div>
+
+    {# Calculamos stats desde Jinja #}
+    {% set total      = estudiantes|length %}
+    {% set reprobados = estudiantes|selectattr("promedio","lt", 3.0)|list|length %}
+    {% set aprobados  = total - reprobados %}
+    {% set sum_prom   = estudiantes|sum(attribute="promedio") %}
+    {% set prom_gral  = (sum_prom / total)|round(2) if total > 0 else 0 %}
+
+    <div class="kpi-grid">
+      <div class="kpi-item">
+        <div class="kpi-label">Total estudiantes</div>
+        <div class="kpi-val">{{ total }}</div>
+      </div>
+      <div class="kpi-item">
+        <div class="kpi-label">Promedio general</div>
+        <div class="kpi-val
+          {% if prom_gral >= 4.0 %} green
+          {% elif prom_gral >= 3.0 %} yellow
+          {% else %} red {% endif %}">
+          {{ prom_gral }}
+        </div>
+      </div>
+      <div class="kpi-item">
+        <div class="kpi-label">Aprobados</div>
+        <div class="kpi-val green">{{ aprobados }}</div>
+      </div>
+      <div class="kpi-item">
+        <div class="kpi-label">Reprobados</div>
+        <div class="kpi-val red">{{ reprobados }}</div>
+      </div>
+      <div class="kpi-item">
+        <div class="kpi-label">Tasa aprobación</div>
+        <div class="kpi-val
+          {% if total > 0 and (aprobados/total) >= 0.7 %} green
+          {% elif total > 0 and (aprobados/total) >= 0.5 %} yellow
+          {% else %} red {% endif %}">
+          {{ ((aprobados / total * 100)|round(1) if total > 0 else 0) }}%
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# ── GRÁFICAS ── #}
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Distribución de rendimiento</div>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-box">
+        <div class="chart-box-title">Distribución por nivel</div>
+        <canvas id="chartPie" height="200"></canvas>
+      </div>
+      <div class="chart-box">
+        <div class="chart-box-title">Promedios por estudiante</div>
+        <canvas id="chartBar" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+
+  {# ── TABLA DE ESTUDIANTES ── #}
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Estudiantes</div>
+    </div>
+
+    {# Alerta si hay reprobados #}
+    <div class="alerta-reprobados {% if reprobados == 0 %}hidden{% endif %}" id="alertaReprobados">
+      ⚠️ {{ reprobados }} estudiante{{ 's' if reprobados != 1 else '' }} con promedio menor a 3.0
+    </div>
+
+    <div class="search-row">
+      <input class="search-input" type="text" id="searchInput"
+             placeholder="Buscar por nombre..." oninput="filtrar()"/>
+      <select class="filter-select" id="filtroNivel" onchange="filtrar()">
+        <option value="">Todos los niveles</option>
+        <option value="excepcional">⭐ Excepcional (5.0)</option>
+        <option value="bueno">🟢 Bueno (4.0 – 4.9)</option>
+        <option value="regular">🟡 Regular (3.0 – 3.9)</option>
+        <option value="malo">🔴 Malo (&lt; 3.0)</option>
+      </select>
+      <button class="btn" onclick="limpiarFiltros()">✕ Limpiar</button>
+    </div>
+
+    <div class="results-count" id="count"></div>
+    <div class="tabla-wrap">
+      <table class="results-table" id="tablaEstudiantes">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Edad</th>
+            <th>Nota 1</th>
+            <th>Nota 2</th>
+            <th>Nota 3</th>
+            <th>Promedio</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tbodyEstudiantes">
+          {% for e in estudiantes %}
+          <tr class="clickable fila-estudiante"
+              data-nombre="{{ e.nombre|lower }}"
+              data-promedio="{{ e.promedio }}"
+              data-id="{{ e.id_estudiante }}"
+              onclick="abrirEdicion({{ e.id_estudiante }}, '{{ e.nombre }}', {{ e.nota1 }}, {{ e.nota2 }}, {{ e.nota3 }})">
+            <td><strong>{{ e.nombre }}</strong></td>
+            <td>{{ e.edad }}</td>
+            <td>{{ e.nota1 }}</td>
+            <td>{{ e.nota2 }}</td>
+            <td>{{ e.nota3 }}</td>
+            <td>
+              {% set p = e.promedio %}
+              {% if p == 5.0 %}
+                <span class="badge-p badge-excepcional">⭐ {{ p }}</span>
+              {% elif p >= 4.0 %}
+                <span class="badge-p badge-bueno">🟢 {{ p }}</span>
+              {% elif p >= 3.0 %}
+                <span class="badge-p badge-regular">🟡 {{ p }}</span>
+              {% else %}
+                <span class="badge-p badge-malo">🔴 {{ p }}</span>
+              {% endif %}
+            </td>
+            <td>
+              <button class="btn-edit-row"
+                onclick="event.stopPropagation(); abrirEdicion({{ e.id_estudiante }}, '{{ e.nombre }}', {{ e.nota1 }}, {{ e.nota2 }}, {{ e.nota3 }})">
+                Editar
+              </button>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="no-results">No hay estudiantes en esta carrera.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+{# ── MODAL EDITAR NOTAS ── #}
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <h3 id="modalNombre">Editar notas</h3>
+    <p class="modal-sub" id="modalSub">Modifica las notas del estudiante</p>
+
+    <input type="hidden" id="editId"/>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Nota 1</label>
+        <input type="number" id="editNota1" min="0" max="5" step="0.1" placeholder="0.0 – 5.0"
+               oninput="actualizarPreview()"/>
+      </div>
+      <div class="form-group">
+        <label>Nota 2</label>
+        <input type="number" id="editNota2" min="0" max="5" step="0.1" placeholder="0.0 – 5.0"
+               oninput="actualizarPreview()"/>
+      </div>
+      <div class="form-group">
+        <label>Nota 3</label>
+        <input type="number" id="editNota3" min="0" max="5" step="0.1" placeholder="0.0 – 5.0"
+               oninput="actualizarPreview()"/>
+      </div>
+    </div>
+
+    {# Preview del promedio en tiempo real #}
+    <div class="promedio-preview" id="promedioPreview">— Promedio</div>
+
+    <div class="msg" id="editMsg"></div>
+
+    <div class="modal-actions" style="margin-top:20px;">
+      <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-save"   onclick="guardarNotas()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATOS desde Jinja para las gráficas ──────────────────────────────────────
+// Pasamos los datos del servidor a JS para construir los charts
+const ESTUDIANTES = [
+  {% for e in estudiantes %}
+  { nombre: {{ e.nombre|tojson }}, promedio: {{ e.promedio }} },
+  {% endfor %}
+];
+
+// ── GRÁFICA PIE — distribución por nivel ─────────────────────────────────────
+const niveles = { excepcional:0, bueno:0, regular:0, malo:0 };
+ESTUDIANTES.forEach(e => {
+  const p = e.promedio;
+  if (p === 5.0)       niveles.excepcional++;
+  else if (p >= 4.0)   niveles.bueno++;
+  else if (p >= 3.0)   niveles.regular++;
+  else                 niveles.malo++;
+});
+
+new Chart(document.getElementById('chartPie'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Excepcional (5.0)', 'Bueno (4.0–4.9)', 'Regular (3.0–3.9)', 'Malo (<3.0)'],
+    datasets: [{
+      data: [niveles.excepcional, niveles.bueno, niveles.regular, niveles.malo],
+      backgroundColor: ['#fdf5e0','#eafaf1','#fefaec','#fdf0ee'],
+      borderColor:     ['#c9a84c','#27ae60','#d4ac0d','#c0392b'],
+      borderWidth: 2,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position:'bottom', labels:{ font:{ family:'DM Sans', size:11 } } }
+    }
+  }
+});
+
+// ── GRÁFICA BAR — promedio por estudiante ────────────────────────────────────
+// Coloreamos cada barra según el nivel del promedio
+const barColors = ESTUDIANTES.map(e => {
+  if (e.promedio === 5.0) return '#c9a84c';
+  if (e.promedio >= 4.0)  return '#27ae60';
+  if (e.promedio >= 3.0)  return '#d4ac0d';
+  return '#c0392b';
+});
+
+new Chart(document.getElementById('chartBar'), {
+  type: 'bar',
+  data: {
+    labels: ESTUDIANTES.map(e => e.nombre.split(' ')[0]), // solo primer nombre para espacio
+    datasets: [{
+      label: 'Promedio',
+      data:  ESTUDIANTES.map(e => e.promedio),
+      backgroundColor: barColors,
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true,
+    scales: {
+      y: { min:0, max:5, ticks:{ font:{ family:'DM Mono', size:10 } } },
+      x: { ticks:{ font:{ family:'DM Sans', size:10 } } }
+    },
+    plugins: {
+      legend: { display:false },
+      // Línea de referencia en 3.0 (mínimo para aprobar)
+      annotation: {}
+    }
+  }
+});
+
+// ── FILTRADO DE TABLA ────────────────────────────────────────────────────────
+function filtrar() {
+  const texto  = document.getElementById('searchInput').value.toLowerCase();
+  const nivel  = document.getElementById('filtroNivel').value;
+  const filas  = document.querySelectorAll('.fila-estudiante');
+  let visible  = 0;
+
+  filas.forEach(fila => {
+    const nombre   = fila.dataset.nombre;
+    const promedio = parseFloat(fila.dataset.promedio);
+
+    // Categoría del promedio
+    let cat = 'malo';
+    if (promedio === 5.0)      cat = 'excepcional';
+    else if (promedio >= 4.0)  cat = 'bueno';
+    else if (promedio >= 3.0)  cat = 'regular';
+
+    const okTexto = !texto || nombre.includes(texto);
+    const okNivel = !nivel  || cat === nivel;
+
+    if (okTexto && okNivel) {
+      fila.style.display = '';
+      visible++;
+    } else {
+      fila.style.display = 'none';
+    }
+  });
+
+  document.getElementById('count').textContent =
+    visible > 0 ? `${visible} estudiante${visible !== 1 ? 's' : ''} encontrado${visible !== 1 ? 's' : ''}` : '';
+}
+
+function limpiarFiltros() {
+  document.getElementById('searchInput').value  = '';
+  document.getElementById('filtroNivel').value  = '';
+  filtrar();
+}
+
+// Inicializamos el contador
+filtrar();
+
+// ── MODAL EDITAR NOTAS ───────────────────────────────────────────────────────
+function abrirEdicion(id, nombre, nota1, nota2, nota3) {
+  document.getElementById('editId').value         = id;
+  document.getElementById('editNota1').value      = nota1;
+  document.getElementById('editNota2').value      = nota2;
+  document.getElementById('editNota3').value      = nota3;
+  document.getElementById('modalNombre').textContent = nombre;
+  document.getElementById('modalSub').textContent    = `ID: ${id}  ·  Modifica las notas`;
+  document.getElementById('editMsg').className       = 'msg';
+  document.getElementById('editMsg').textContent     = '';
+  actualizarPreview();
+  document.getElementById('modalBackdrop').classList.add('visible');
+}
+
+function cerrarModal() {
+  document.getElementById('modalBackdrop').classList.remove('visible');
+}
+
+// Preview del promedio en tiempo real mientras escribe las notas
+function actualizarPreview() {
+  const n1 = parseFloat(document.getElementById('editNota1').value);
+  const n2 = parseFloat(document.getElementById('editNota2').value);
+  const n3 = parseFloat(document.getElementById('editNota3').value);
+  const el = document.getElementById('promedioPreview');
+
+  if (isNaN(n1) || isNaN(n2) || isNaN(n3)) {
+    el.textContent = '— Promedio';
+    el.style.background = 'var(--bg)';
+    el.style.color = 'var(--muted)';
+    el.style.borderColor = 'var(--border)';
+    return;
+  }
+
+  const p = Math.round(((n1 + n2 + n3) / 3) * 100) / 100;
+  let bg, color, border;
+
+  if (p === 5.0) {
+    bg='#fdf5e0'; color='#c9a84c'; border='#f0d080';
+  } else if (p >= 4.0) {
+    bg='#eafaf1'; color='#27ae60'; border='#a9dfbf';
+  } else if (p >= 3.0) {
+    bg='#fefaec'; color='#d4ac0d'; border='#f7dc6f';
+  } else {
+    bg='#fdf0ee'; color='#c0392b'; border='#f0cdc9';
+  }
+
+  el.textContent = `Promedio: ${p}`;
+  el.style.background   = bg;
+  el.style.color        = color;
+  el.style.borderColor  = border;
+}
+
+// Guardar notas — llama a la API existente de Flask
+async function guardarNotas() {
+  const id    = document.getElementById('editId').value;
+  const nota1 = parseFloat(document.getElementById('editNota1').value);
+  const nota2 = parseFloat(document.getElementById('editNota2').value);
+  const nota3 = parseFloat(document.getElementById('editNota3').value);
+
+  if (isNaN(nota1) || isNaN(nota2) || isNaN(nota3)) {
+    mostrarMsg('⚠️ Completa las 3 notas.', 'error'); return;
+  }
+  if ([nota1,nota2,nota3].some(n => n < 0 || n > 5)) {
+    mostrarMsg('⚠️ Las notas deben estar entre 0.0 y 5.0.', 'error'); return;
+  }
+
+  // Primero obtenemos los datos actuales del estudiante para no perder nombre/edad/carrera
+  const busRes  = await fetch(`/api/estudiantes/buscar?nombre=`);
+  const busData = await busRes.json();
+  const est     = (busData.estudiantes || []).find(e => e.id_estudiante == id);
+
+  if (!est) { mostrarMsg('❌ No se encontró el estudiante.', 'error'); return; }
+
+  const res  = await fetch('/api/estudiantes/editar', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      id_estudiante: id,
+      nombre:  est.nombre,
+      edad:    est.edad,
+      carrera: est.carrera,
+      nota1, nota2, nota3,
+    })
+  });
+  const data = await res.json();
+
+  if (data.ok) {
+    mostrarMsg('✅ Notas actualizadas correctamente.', 'success');
+    // Recargamos la página después de 1.2s para reflejar los cambios
+    setTimeout(() => location.reload(), 1200);
+  } else {
+    mostrarMsg('❌ ' + data.error, 'error');
+  }
+}
+
+function mostrarMsg(texto, tipo) {
+  const el = document.getElementById('editMsg');
+  el.textContent = texto;
+  el.className   = `msg ${tipo}`;
+}
+
+// Cerrar modal al hacer clic fuera
+document.getElementById('modalBackdrop').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalBackdrop')) cerrarModal();
+});
+</script>
+</body>
+</html>
