@@ -1,7 +1,7 @@
 -- 1. CREAR BASE DE DATOS
-CREATE DATABASE Estudiantes;
-USE Estudiantes;
-
+CREATE DATABASE Alumnos_DB;
+USE Alumnos_DB;
+--mysql://root:tdNQJcClPBfxWQrOJkBeeiBYOUiJAqeM@maglev.proxy.rlwy.net:21450/railway
 -- 2. CREAR TABLA estudiantes (SIN FK aún)
 CREATE TABLE estudiantes(
     id_estudiante INT PRIMARY KEY AUTO_INCREMENT,
@@ -104,5 +104,5 @@ DESCRIBE log_actividad;
 -- 14. VER USUARIOS INSERTADOS
 SELECT * FROM usuarios;
 
--- NOTA: El DROP DATABASE está al final por si decides usarlo
--- DROP DATABASE Estudiantes;
+
+--DROP DATABASE estudiantes;
