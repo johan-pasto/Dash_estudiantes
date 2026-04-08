@@ -48,8 +48,8 @@ def login():
                 from database import registrar_log
                 registrar_log(session["username"], "login", f"Inicio de sesión — rol: {rol}")
 
-                if rol == "admin":       return redirect("/dashprincipal")
-                elif rol == "profesor":  return redirect("/profesor")
+                if rol == "admin":        return redirect("/dashprincipal")
+                elif rol == "profesor":   return redirect("/profesor")
                 elif rol == "estudiante": return redirect("/estudiante")
                 else:
                     error = "Rol no reconocido. Contacta al administrador."
@@ -77,45 +77,37 @@ def redirect_seguro_por_rol():
 def dashprincipal():
     if "username" not in session:
         return redirect("/")
-    
-    # Verificar que sea admin
     if session.get("rol") != "admin":
         return redirect_seguro_por_rol()
-    
-    # Para admin, obtener estadísticas globales (no filtradas por carrera)
+
     try:
-        # Esta función ya existe en tu database.py
         data = database.obtener_stats_globales()
-        mis_estadisticas = data["stats"]
+        mis_estadisticas         = data["stats"]
         estadisticas_por_carrera = data["por_carrera"]
-        
     except Exception as e:
         print(f"Error obteniendo estadísticas: {e}")
-        mis_estadisticas = {
-            "total_estudiantes": 0,
-            "promedio_global": 0,
-            "aprobados": 0,
-            "reprobados": 0,
-            "total_carreras": 0
-        }
+        mis_estadisticas         = {"total_estudiantes": 0, "promedio_global": 0,
+                                    "aprobados": 0, "reprobados": 0, "total_carreras": 0}
         estadisticas_por_carrera = []
-    
-    return render_template("dashprinci.html", 
-                         usuario=session["username"],
-                         stats=mis_estadisticas,
-                         por_carrera=estadisticas_por_carrera)
+
+    return render_template("dashprinci.html",
+                           usuario     = session["username"],
+                           stats       = mis_estadisticas,
+                           por_carrera = estadisticas_por_carrera)
+
+
 # ── ADMIN — panel de gestión ──────────────────────────────────────────────────
 @app.route("/admin")
 def admin_panel():
-    if "username" not in session:      return redirect("/")
-    if session.get("rol") != "admin":  return redirect_seguro_por_rol()
+    if "username" not in session:     return redirect("/")
+    if session.get("rol") != "admin": return redirect_seguro_por_rol()
 
     from database import obtener_stats_globales, obtener_todos_usuarios, \
                          obtener_log, obtener_alertas
 
     data = obtener_stats_globales()
     return render_template(
-        "admin.html",
+        "dashprinci.html",
         usuario      = session["username"],
         stats        = data["stats"],
         por_carrera  = data["por_carrera"],
@@ -124,6 +116,16 @@ def admin_panel():
         log          = obtener_log(50),
         alertas      = obtener_alertas(),
     )
+
+
+# ── ADMIN — gestión de usuarios ───────────────────────────────────────────────
+@app.route("/usuarios")
+def vista_usuarios():
+    if "username" not in session:     return redirect("/")
+    if session.get("rol") != "admin": return redirect_seguro_por_rol()
+
+    from database import obtener_todos_usuarios
+    return render_template("usuarios.html", usuarios=obtener_todos_usuarios())
 
 
 # ── ADMIN API — usuarios ──────────────────────────────────────────────────────
@@ -142,7 +144,13 @@ def api_usuarios_crear():
     datos = request.get_json()
     try:
         from database import crear_usuario, registrar_log
-        crear_usuario(datos)
+        crear_usuario({
+            "nombre_usuario": datos["nombre_usuario"],
+            "contraseña":     datos.get("contrasena"),
+            "rol":            datos["rol"],
+            "carrera":        datos.get("carrera"),
+            "id_estudiante":  datos.get("id_estudiante"),
+        })
         registrar_log(session["username"], "crear_usuario",
                       f"{datos['nombre_usuario']} — rol: {datos['rol']}")
         return jsonify({"ok": True})
@@ -159,7 +167,14 @@ def api_usuarios_editar():
     datos = request.get_json()
     try:
         from database import editar_usuario, registrar_log
-        editar_usuario(datos)
+        editar_usuario({
+            "id_usuario":     datos["id_usuario"],
+            "nombre_usuario": datos["nombre_usuario"],
+            "contraseña":     datos.get("contrasena"),
+            "rol":            datos["rol"],
+            "carrera":        datos.get("carrera"),
+            "id_estudiante":  datos.get("id_estudiante"),
+        })
         registrar_log(session["username"], "editar_usuario",
                       f"ID:{datos['id_usuario']} — {datos['nombre_usuario']}")
         return jsonify({"ok": True})
@@ -204,7 +219,7 @@ def api_alertas():
     return jsonify({"ok": True, "alertas": obtener_alertas()})
 
 
-# ── PROFESOR ─────────────────────────────────────────────────────────────────
+# ── PROFESOR ──────────────────────────────────────────────────────────────────
 @app.route("/profesor")
 def profesor_dashboard():
     if "username" not in session:        return redirect("/")
@@ -222,16 +237,16 @@ def profesor_dashboard():
     estudiantes_carrera = obtener_estudiantes_por_carrera(carrera_profesor)
     return render_template(
         "profesor.html",
-        usuario    = session["username"],
-        carrera    = carrera_profesor,
-        estudiantes= estudiantes_carrera,
+        usuario     = session["username"],
+        carrera     = carrera_profesor,
+        estudiantes = estudiantes_carrera,
     )
 
 
 @app.route("/profesor/exportar_excel")
 def exportar_excel_profesor():
-    if "username" not in session:          return redirect("/")
-    if session.get("rol") != "profesor":   return redirect_seguro_por_rol()
+    if "username" not in session:        return redirect("/")
+    if session.get("rol") != "profesor": return redirect_seguro_por_rol()
 
     from flask import send_file
     import io, openpyxl
@@ -248,10 +263,10 @@ def exportar_excel_profesor():
     ws = wb.active
     ws.title = "Estudiantes"
 
-    header_font  = Font(bold=True, color="FFFFFF", size=11)
-    header_fill  = PatternFill("solid", fgColor="1A1A18")
-    center       = Alignment(horizontal="center", vertical="center")
-    thin_border  = Border(
+    header_font = Font(bold=True, color="FFFFFF", size=11)
+    header_fill = PatternFill("solid", fgColor="1A1A18")
+    center      = Alignment(horizontal="center", vertical="center")
+    thin_border = Border(
         left=Side(style="thin", color="E8E8E4"),
         right=Side(style="thin", color="E8E8E4"),
         top=Side(style="thin", color="E8E8E4"),
@@ -299,7 +314,7 @@ def exportar_excel_profesor():
                      as_attachment=True, download_name=nombre_archivo)
 
 
-# ── ESTUDIANTE ───────────────────────────────────────────────────────────────
+# ── ESTUDIANTE ────────────────────────────────────────────────────────────────
 @app.route("/estudiante")
 def estudiante_dashboard():
     if "username" not in session:          return redirect("/")
@@ -374,7 +389,7 @@ def descargar_reporte():
                      as_attachment=True, download_name=nombre_archivo)
 
 
-# ── TOP ESTUDIANTES ──────────────────────────────────────────────────────────
+# ── TOP ESTUDIANTES ───────────────────────────────────────────────────────────
 @app.route("/top_estudiantes")
 def top_estudiantes():
     if "username" not in session: return redirect("/")
@@ -394,7 +409,7 @@ def api_top():
         return jsonify({"ok": False, "error": str(e)})
 
 
-# ── EDITAR ESTUDIANTE ────────────────────────────────────────────────────────
+# ── EDITAR ESTUDIANTE ─────────────────────────────────────────────────────────
 @app.route("/editar_estudiante")
 def editar_estudiante_page():
     if "username" not in session: return redirect("/")
@@ -443,7 +458,7 @@ def api_eliminar():
         return jsonify({"ok": False, "error": f"Error al eliminar: {str(e)}"})
 
 
-# ── CARGA MASIVA ─────────────────────────────────────────────────────────────
+# ── CARGA MASIVA ──────────────────────────────────────────────────────────────
 @app.route("/carga_masiva", methods=["GET", "POST"])
 def carga_masiva():
     if "username" not in session: return redirect("/")
@@ -465,7 +480,7 @@ def carga_masiva():
         registrar_log(session["username"], "carga_masiva",
                       f"Insertados:{resultado['insertados']} Duplicados:{resultado['duplicados']} Invalidos:{resultado['invalidos']}")
         return jsonify({
-            "ok": True,
+            "ok":        True,
             "insertados": int(resultado["insertados"]),
             "duplicados": int(resultado["duplicados"]),
             "vacios":     int(resultado["vacios"]),
@@ -478,13 +493,13 @@ def carga_masiva():
         return jsonify({"ok": False, "error": f"Error procesando el archivo: {str(e)}", "detalles": []})
 
 
-# ── JUEGO ────────────────────────────────────────────────────────────────────
+# ── JUEGO ─────────────────────────────────────────────────────────────────────
 @app.route("/juego")
 def juego():
     return render_template("gallina-pro.html")
 
 
-# ── LOGOUT ───────────────────────────────────────────────────────────────────
+# ── LOGOUT ────────────────────────────────────────────────────────────────────
 @app.route("/logout")
 def logout():
     from database import registrar_log
@@ -494,7 +509,7 @@ def logout():
     return redirect("/")
 
 
-# ── 404 ──────────────────────────────────────────────────────────────────────
+# ── 404 ───────────────────────────────────────────────────────────────────────
 @app.errorhandler(404)
 def pagina_no_encontrada(e):
     return render_template("404.html"), 404

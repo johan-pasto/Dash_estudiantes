@@ -51,8 +51,7 @@ main{padding-top:calc(var(--nh) + 20px);padding-bottom:60px;max-width:1100px;mar
 .br2{background:var(--ys);color:var(--ye);border-color:var(--yb);}
 .bg2{background:var(--gs);color:var(--gr);border-color:var(--gb);}
 .bgo{background:var(--gos);color:var(--go);border-color:var(--gob);}
-
-.sr{display:flex;gap:8px;margin-bottom:12px;}
+.sr{display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap;}
 .si{flex:1;min-width:150px;padding:8px 10px;border:1px solid var(--bo);border-radius:8px;
   font-family:'DM Sans',sans-serif;font-size:.85rem;background:var(--bg);color:var(--tx);}
 .si:focus{outline:none;border-color:var(--tx);background:#fff;}
@@ -124,7 +123,10 @@ main{padding-top:calc(var(--nh) + 20px);padding-bottom:60px;max-width:1100px;mar
   </div>
 
   <div class="card">
-    <div class="ch"><div class="ct">Consulta de usuarios</div></div>
+    <div class="ch">
+      <div class="ct">Usuarios</div>
+      <a class="btn btn-b" href="/usuarios">Gestionar</a>
+    </div>
     <div class="sr">
       <input class="si" type="text" id="sU" placeholder="Buscar usuario..." oninput="filtU()"/>
       <select class="fs" id="fR" onchange="filtU()">
@@ -149,6 +151,7 @@ main{padding-top:calc(var(--nh) + 20px);padding-bottom:60px;max-width:1100px;mar
       </tbody>
     </table></div>
   </div>
+
 </main>
 
 <script>

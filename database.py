@@ -7,7 +7,7 @@ def conectar():
         host="localhost",
         user="root",
         password="",
-        database="Estudiantes"
+        database="Alumnos_DB"
     )
     return conexion
 
@@ -452,16 +452,18 @@ def registrar_log(usuario, accion, detalle=""):
 
 
 def obtener_log(limite=100):
-    """Devuelve los últimos N registros del log."""
     conn = conectar()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("""
+
+    query = f"""
         SELECT usuario, accion, detalle,
                DATE_FORMAT(fecha, '%%d/%%m/%%Y %%H:%%i:%%s') AS fecha_fmt
         FROM log_actividad
         ORDER BY fecha DESC
-        LIMIT %s
-    """, (limite,))
+        LIMIT {int(limite)}
+    """
+
+    cursor.execute(query)
     resultado = cursor.fetchall()
     cursor.close()
     conn.close()

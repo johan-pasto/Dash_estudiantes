@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Gestión de Usuarios</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#f7f7f5;--su:#fff;--bo:#e8e8e4;--tx:#1a1a18;--mu:#9a9a94;
+  --gr:#27ae60;--gs:#eafaf1;--gb:#a9dfbf;--re:#c0392b;--rs:#fdf0ee;--rb:#f0cdc9;
+  --bl:#2980b9;--bs:#eaf4fb;--bb:#aed6f1;--nh:60px;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;}
+nav{position:fixed;top:0;left:0;right:0;height:var(--nh);background:var(--su);
+  border-bottom:1px solid var(--bo);display:flex;align-items:center;padding:0 20px;z-index:100;gap:6px;}
+.nb{display:flex;align-items:center;gap:8px;font-size:.92rem;font-weight:600;flex:1;}
+.nd{width:8px;height:8px;border-radius:50%;background:var(--tx);}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;
+  font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:500;cursor:pointer;
+  border:1px solid var(--bo);background:var(--su);color:var(--tx);text-decoration:none;transition:background .15s;}
+.btn:hover{background:var(--bg);}
+.btn-b{background:var(--bs);color:var(--bl);border-color:var(--bb);}
+main{padding-top:calc(var(--nh) + 20px);padding-bottom:60px;max-width:1100px;margin:0 auto;padding-left:20px;padding-right:20px;}
+.card{background:var(--su);border:1px solid var(--bo);border-radius:12px;padding:20px;margin-bottom:16px;
+  opacity:0;transform:translateY(8px);animation:fu .35s ease forwards;}
+@keyframes fu{to{opacity:1;transform:translateY(0);}}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:8px;flex-wrap:wrap;}
+.ct{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--mu);
+  display:flex;align-items:center;gap:7px;}
+.ct::before{content:'';display:block;width:3px;height:11px;background:var(--tx);border-radius:2px;}
+.sr{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap;}
+.si{flex:1;min-width:150px;padding:8px 10px;border:1px solid var(--bo);border-radius:8px;
+  font-family:'DM Sans',sans-serif;font-size:.85rem;background:var(--bg);color:var(--tx);}
+.si:focus{outline:none;border-color:var(--tx);background:#fff;}
+.fs{padding:8px 10px;border:1px solid var(--bo);border-radius:8px;
+  font-family:'DM Sans',sans-serif;font-size:.82rem;background:var(--bg);color:var(--tx);cursor:pointer;}
+.bpr{padding:7px 15px;background:var(--tx);color:#fff;border:none;border-radius:8px;
+  font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;transition:opacity .15s;}
+.bpr:hover{opacity:.85;}
+.mt{width:100%;border-collapse:collapse;font-size:.8rem;}
+.mt th{text-align:left;padding:7px 10px;background:var(--bg);border:1px solid var(--bo);
+  font-size:.67rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mu);font-weight:600;}
+.mt td{padding:7px 10px;border:1px solid var(--bo);vertical-align:middle;}
+.mt tr:nth-child(even) td{background:#fafaf8;}
+.rb3{display:inline-block;padding:2px 7px;border-radius:20px;font-size:.7rem;font-weight:600;}
+.rol-admin{background:#f0e6ff;color:#7c3aed;}
+.rol-profesor{background:var(--bs);color:var(--bl);}
+.rol-estudiante{background:var(--gs);color:var(--gr);}
+.be{padding:4px 9px;border-radius:6px;border:1px solid var(--bb);
+  background:var(--bs);color:var(--bl);font-size:.7rem;font-weight:600;cursor:pointer;}
+.be:hover{background:#d0eaf8;}
+.bd{padding:4px 9px;border-radius:6px;border:1px solid var(--rb);
+  background:var(--rs);color:var(--re);font-size:.7rem;font-weight:600;cursor:pointer;}
+.bd:hover{background:#fbe0dc;}
+.empty{text-align:center;color:var(--mu);padding:24px;font-size:.82rem;}
+/* Modal */
+.mod{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:none;align-items:center;justify-content:center;}
+.mod.visible{display:flex;}
+.mo{background:#fff;border-radius:12px;padding:24px;max-width:460px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.15);}
+.mo h3{font-size:1rem;font-weight:600;margin-bottom:3px;}
+.mosub{font-size:.78rem;color:var(--mu);margin-bottom:16px;}
+.fc{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
+.fc label{font-size:.65rem;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.06em;}
+.fc input,.fc select{padding:7px 10px;border:1px solid var(--bo);border-radius:8px;
+  font-family:'DM Sans',sans-serif;font-size:.86rem;background:var(--bg);color:var(--tx);}
+.fc input:focus,.fc select:focus{outline:none;border-color:var(--tx);background:#fff;}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.ma{display:flex;gap:7px;justify-content:flex-end;margin-top:14px;}
+.bc{padding:7px 15px;background:var(--bg);color:var(--mu);border:1px solid var(--bo);border-radius:8px;cursor:pointer;}
+.msg{padding:9px 12px;border-radius:8px;font-size:.8rem;font-weight:500;margin-top:8px;display:none;}
+.msg.success{background:var(--gs);border:1px solid var(--gb);color:#1e8449;display:block;}
+.msg.error{background:var(--rs);border:1px solid var(--rb);color:var(--re);display:block;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nb"><span class="nd"></span>Gestión de Usuarios</div>
+  <a class="btn btn-b" href="/admin">&#8592; Volver</a>
+</nav>
+
+<main>
+  <div class="card">
+    <div class="ch">
+      <div class="ct">Usuarios</div>
+      <button class="bpr" onclick="abrirCrear()">+ Nuevo usuario</button>
+    </div>
+    <div class="sr">
+      <input class="si" type="text" id="sU" placeholder="Buscar usuario..." oninput="filtU()"/>
+      <select class="fs" id="fR" onchange="filtU()">
+        <option value="">Todos los roles</option>
+        <option value="admin">Admin</option>
+        <option value="profesor">Profesor</option>
+        <option value="estudiante">Estudiante</option>
+      </select>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="mt">
+        <thead>
+          <tr><th>ID</th><th>Usuario</th><th>Rol</th><th>Carrera</th><th>ID Est.</th><th></th></tr>
+        </thead>
+        <tbody id="tbU">
+        {% for u in usuarios %}
+        <tr class="fu" data-n="{{ u.nombre_usuario|lower }}" data-r="{{ u.rol|lower }}">
+          <td style="font-family:'DM Mono',monospace;color:var(--mu)">{{ u.id_usuario }}</td>
+          <td><strong>{{ u.nombre_usuario }}</strong></td>
+          <td><span class="rb3 rol-{{ u.rol|lower }}">{{ u.rol }}</span></td>
+          <td>{{ u.carrera or '&mdash;' }}</td>
+          <td style="font-family:'DM Mono',monospace">{{ u.id_estudiante or '&mdash;' }}</td>
+          <td style="display:flex;gap:5px;">
+            <button class="be" onclick="abrirEditar({{ u.id_usuario }},'{{ u.nombre_usuario }}','{{ u.rol }}','{{ u.carrera or '' }}','{{ u.id_estudiante or '' }}')">Editar</button>
+            <button class="bd" onclick="confirmarEliminar({{ u.id_usuario }},'{{ u.nombre_usuario }}')">Eliminar</button>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="empty">Sin usuarios.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<!-- Modal crear / editar -->
+<div class="mod" id="mU">
+  <div class="mo">
+    <h3 id="mTit">Nuevo usuario</h3>
+    <p class="mosub" id="mSub">Completa los datos</p>
+    <input type="hidden" id="uId"/>
+    <div class="fr">
+      <div class="fc"><label>Usuario</label><input type="text" id="uN" placeholder="nombre.usuario"/></div>
+      <div class="fc"><label>Contraseña</label><input type="password" id="uP" placeholder="vacío = no cambiar"/></div>
+    </div>
+    <div class="fr">
+      <div class="fc"><label>Rol</label>
+        <select id="uR" onchange="toggleCampos()">
+          <option value="estudiante">Estudiante</option>
+          <option value="profesor">Profesor</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div class="fc" id="wCarrera"><label>Carrera</label><input type="text" id="uC" placeholder="Solo profesores"/></div>
+    </div>
+    <div class="fc" id="wIdEst"><label>ID Estudiante</label><input type="number" id="uIE" placeholder="Solo estudiantes"/></div>
+    <div class="msg" id="mMsg"></div>
+    <div class="ma">
+      <button class="bc" onclick="cerrarMU()">Cancelar</button>
+      <button class="bpr" onclick="guardarU()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal confirmar eliminar -->
+<div class="mod" id="mC">
+  <div class="mo">
+    <h3>Eliminar usuario</h3>
+    <p class="mosub">El usuario <strong id="cN"></strong> será eliminado permanentemente.</p>
+    <input type="hidden" id="cId"/>
+    <div class="ma">
+      <button class="bc" onclick="cerrarMC()">Cancelar</button>
+      <button class="bpr" style="background:var(--re)" onclick="elimU()">Sí, eliminar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Filtro ────────────────────────────────────────────────────────────────────
+function filtU(){
+  const t=document.getElementById('sU').value.toLowerCase();
+  const r=document.getElementById('fR').value;
+  document.querySelectorAll('.fu').forEach(f=>{
+    f.style.display=(!t||f.dataset.n.includes(t))&&(!r||f.dataset.r===r)?'':'none';
+  });
+}
+
+// ── Mostrar/ocultar campos según rol ─────────────────────────────────────────
+function toggleCampos(){
+  const r=document.getElementById('uR').value;
+  document.getElementById('wCarrera').style.display = r==='profesor' ? '' : 'none';
+  document.getElementById('wIdEst').style.display   = r==='estudiante' ? '' : 'none';
+}
+
+// ── Modal crear ───────────────────────────────────────────────────────────────
+let edit=false;
+function abrirCrear(){
+  edit=false;
+  document.getElementById('mTit').textContent='Nuevo usuario';
+  document.getElementById('mSub').textContent='Completa todos los datos';
+  ['uId','uN','uP','uC','uIE'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('uR').value='estudiante';
+  document.getElementById('mMsg').className='msg';
+  toggleCampos();
+  document.getElementById('mU').classList.add('visible');
+}
+
+// ── Modal editar ──────────────────────────────────────────────────────────────
+function abrirEditar(id,n,r,c,ie){
+  edit=true;
+  document.getElementById('mTit').textContent='Editar usuario';
+  document.getElementById('mSub').textContent='ID: '+id;
+  document.getElementById('uId').value=id;
+  document.getElementById('uN').value=n;
+  document.getElementById('uP').value='';
+  document.getElementById('uR').value=r;
+  document.getElementById('uC').value=c;
+  document.getElementById('uIE').value=ie;
+  document.getElementById('mMsg').className='msg';
+  toggleCampos();
+  document.getElementById('mU').classList.add('visible');
+}
+function cerrarMU(){document.getElementById('mU').classList.remove('visible');}
+
+// ── Guardar (crear o editar) ──────────────────────────────────────────────────
+async function guardarU(){
+  const id=document.getElementById('uId').value;
+  const n=document.getElementById('uN').value.trim();
+  const p=document.getElementById('uP').value;
+  const r=document.getElementById('uR').value;
+  const c=document.getElementById('uC').value.trim();
+  const ie=document.getElementById('uIE').value;
+  if(!n){mostrarM('El nombre de usuario es obligatorio','error');return;}
+  if(!edit&&!p){mostrarM('La contraseña es obligatoria al crear','error');return;}
+  const url=edit?'/api/usuarios/editar':'/api/usuarios/crear';
+  const res=await fetch(url,{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      id_usuario: id||null,
+      nombre_usuario: n,
+      contrasena: p||null,
+      rol: r,
+      carrera: c||null,
+      id_estudiante: ie?parseInt(ie):null
+    })
+  });
+  const d=await res.json();
+  if(d.ok){mostrarM('Guardado correctamente','success');setTimeout(()=>location.reload(),1100);}
+  else mostrarM(d.error,'error');
+}
+function mostrarM(t,tp){const e=document.getElementById('mMsg');e.textContent=t;e.className='msg '+tp;}
+
+// ── Eliminar ──────────────────────────────────────────────────────────────────
+function confirmarEliminar(id,n){
+  document.getElementById('cId').value=id;
+  document.getElementById('cN').textContent=n;
+  document.getElementById('mC').classList.add('visible');
+}
+function cerrarMC(){document.getElementById('mC').classList.remove('visible');}
+async function elimU(){
+  const id=document.getElementById('cId').value;
+  cerrarMC();
+  const res=await fetch('/api/usuarios/eliminar',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({id_usuario:parseInt(id)})
+  });
+  const d=await res.json();
+  if(d.ok)location.reload();
+  else alert('Error: '+d.error);
+}
+
+// ── Cerrar modales al click fuera ─────────────────────────────────────────────
+['mU','mC'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',e=>{
+    if(e.target.id===id)document.getElementById(id).classList.remove('visible');
+  });
+});
+</script>
+</body>
+</html>
