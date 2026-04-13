@@ -2,12 +2,16 @@
 import mysql.connector
 import pandas as pd
 
+import os
+import mysql.connector
+
 def conectar():
     conexion = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="",
-        database="Alumnos_DB"
+        host=os.getenv("mysql.railway.internal"),
+        port=os.getenv("3306"),
+        user=os.getenv("root"),
+        password=os.getenv("tdNQJcClPBfxWQrOJkBeeiBYOUiJAqeM"),
+        database=os.getenv("railway")
     )
     return conexion
 
