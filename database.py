@@ -7,11 +7,11 @@ import mysql.connector
 
 def conectar():
     conexion = mysql.connector.connect(
-        host=os.getenv("mysql.railway.internal"),
-        port=os.getenv("3306"),
-        user=os.getenv("root"),
-        password=os.getenv("tdNQJcClPBfxWQrOJkBeeiBYOUiJAqeM"),
-        database=os.getenv("railway")
+        host=os.getenv("DB_HOST"),        # ← Nombre de variable
+        port=int(os.getenv("DB_PORT", "3306")),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        database=os.getenv("DB_NAME")
     )
     return conexion
 
