@@ -8,6 +8,7 @@ from dashprincipal import creartablero
 import database
 
 app = Flask(__name__)
+server = app
 app.secret_key = os.environ.get("SECRET_KEY", "clave_local_dev")
 
 creartablero(app)
