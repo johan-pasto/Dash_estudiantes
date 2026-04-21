@@ -11,7 +11,7 @@ app = Flask(__name__)
 server = app
 app.secret_key = os.environ.get("SECRET_KEY", "clave_local_dev")
 
-#creartablero(app)
+dash_app = creartablero(app)
 
 
 # ── HEADERS ANTI-CACHÉ ───────────────────────────────────────────────────────

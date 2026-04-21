@@ -77,10 +77,17 @@ def creartablero(server):
     df_inicial = procesar_datos(obtenerestudiantes())
     carreras_unicas = sorted(df_inicial["carrera"].unique()) if not df_inicial.empty else []
 
-    appnotas = dash.Dash(__name__, server=server, url_base_pathname="/tablero/", suppress_callback_exceptions=True)
+    # Usa el server de Flask que ya existe
+    appnotas = dash.Dash(
+        __name__,
+        server=server,
+        url_base_pathname="/tablero/",
+        suppress_callback_exceptions=True
+    )
 
     appnotas.layout = html.Div([
         # Store para guardar los datos en sesión y no saturar la BD
+        
         dcc.Store(id="datos_store"), 
         dcc.Store(id="recargar_signal"),
 
